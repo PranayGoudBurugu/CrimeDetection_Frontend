@@ -1,0 +1,47 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle with Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="innerGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#EC4899;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main Circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#bgGradient)" />
+  
+  <!-- Dance Mudra Symbol (Stylized Hand Gesture) -->
+  <g transform="translate(100, 100)">
+    <!-- Central lotus-like pattern representing classical dance -->
+    <path d="M 0,-50 Q -15,-35 -20,-15 L -30,0 Q -20,15 0,20 Q 20,15 30,0 L 20,-15 Q 15,-35 0,-50 Z" 
+          fill="white" opacity="0.9"/>
+    <path d="M 0,-50 Q 15,-35 20,-15 L 30,0 Q 20,15 0,20 Q -20,15 -30,0 L -20,-15 Q -15,-35 0,-50 Z" 
+          fill="url(#innerGradient)" opacity="0.7"/>
+    
+    <!-- Flowing curves representing grace and movement -->
+    <path d="M -35,-10 Q -40,0 -35,10 Q -30,20 -20,25" 
+          stroke="white" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+    <path d="M 35,-10 Q 40,0 35,10 Q 30,20 20,25" 
+          stroke="white" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+    
+    <!-- Inner details -->
+    <circle cx="0" cy="-5" r="8" fill="white" opacity="0.9"/>
+    <circle cx="0" cy="5" r="5" fill="#EC4899" opacity="0.8"/>
+    
+    <!-- Bottom flowing element -->
+    <path d="M -10,20 Q 0,35 10,20" 
+          stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.9"/>
+  </g>
+  
+  <!-- Decorative corners -->
+  <circle cx="25" cy="25" r="4" fill="white" opacity="0.6"/>
+  <circle cx="175" cy="25" r="4" fill="white" opacity="0.6"/>
+  <circle cx="25" cy="175" r="4" fill="white" opacity="0.6"/>
+  <circle cx="175" cy="175" r="4" fill="white" opacity="0.6"/>
+</svg>
