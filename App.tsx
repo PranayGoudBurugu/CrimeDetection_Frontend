@@ -11,6 +11,7 @@ import { AnalysisState, AnalysisResponse, MudraAnalysis } from "./types";
 import { Timeline } from "./components/Timeline";
 import { VideoPlayer } from "./components/VideoPlayer";
 
+
 const App: React.FC = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState>(
