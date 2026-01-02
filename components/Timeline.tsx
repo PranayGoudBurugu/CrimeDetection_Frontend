@@ -32,22 +32,22 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
     }
   }, [currentTime]);
   return (
-    <div className="flex flex-col h-full overflow-hidden ">
+    <div className="flex flex-col h-full overflow-hidden">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="px-6 py-4 border-b border-pink-500"
+        className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-pink-500"
       >
-        <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+        <h3 className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
           Analysis Timeline
         </h3>
-        <p className="text-sm text-blue-300 mt-1 font-medium">
+        <p className="text-xs sm:text-sm text-blue-300 mt-1 font-medium">
           Detected gestures and expressions
         </p>
       </motion.div>
 
-      <div ref={containerRef} className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+      <div ref={containerRef} className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 space-y-3">
         {segments.length === 0 && (
           <motion.div 
             initial={{ opacity: 0 }}

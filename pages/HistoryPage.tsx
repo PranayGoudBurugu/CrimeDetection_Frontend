@@ -36,20 +36,20 @@ export const HistoryPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-slate-950">
+    <div className="h-full bg-slate-950 overflow-auto">
       {/* Header */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="bg-slate-900 border-b border-purple-500 px-8 py-6"
+        className="bg-slate-900 border-b border-purple-500 pl-4 pr-14 sm:px-6 lg:pl-8 lg:pr-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-10"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
               Analysis History
             </h2>
-            <p className="text-sm text-blue-300 mt-1 font-medium">
+            <p className="text-xs sm:text-sm text-blue-300 mt-1 font-medium">
               View your previously analyzed dance videos
             </p>
           </div>
@@ -67,7 +67,7 @@ export const HistoryPage: React.FC = () => {
       </motion.div>
 
       {/* Content */}
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         {history.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/50">
