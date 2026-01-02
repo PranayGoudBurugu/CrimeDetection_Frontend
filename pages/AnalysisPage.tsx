@@ -166,7 +166,7 @@ export const AnalysisPage: React.FC = () => {
         </div>
 
         {/* Right Sidebar - Timeline */}
-        <div className="w-full lg:w-80 h-48 sm:h-56 lg:h-auto border-t lg:border-t-0 lg:border-l border-purple-900 bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col overflow-hidden shrink-0">
+        <div className="w-full lg:w-80 h-32 lg:h-auto border-t lg:border-t-0 lg:border-l border-purple-900 bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col overflow-hidden shrink-0">
           <Timeline
             segments={analysisResult?.segments || []}
             currentTime={currentTime}
