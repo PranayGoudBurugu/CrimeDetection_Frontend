@@ -55,11 +55,11 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="h-16 border-b border-white/10 bg-[#16161a]/50 backdrop-blur-md flex items-center justify-between px-6 z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center">
-            <Video className="text-white w-5 h-5" />
+          <div className="w-10 h-10 rounded flex items-center justify-center overflow-hidden">
+            <img src="/logo.png" alt="NrityaAI" className="w-6 h-6 object-contain" />
           </div>
           <div>
-            <h1 className="text-xl font-serif font-bold tracking-tight text-white">NrityaAI <span className="text-indigo-400">Studio</span></h1>
+            <h1 className="text-xl font-serif font-bold tracking-tight text-white">Mudra <span className="text-indigo-400">Analysis</span></h1>
           </div>
         </div>
 
