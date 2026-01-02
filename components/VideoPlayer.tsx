@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { MudraAnalysis } from "../types";
-import { Upload, Sparkles } from "lucide-react";
 
 interface VideoPlayerProps {
   videoFile: File | null;
@@ -171,87 +171,106 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   );
 
   return (
-    <div className="relative w-full h-full bg-black flex items-center justify-center group overflow-hidden rounded-xl border border-white/10 shadow-2xl">
+    <div className="w-full h-full flex flex-col bg-slate-950">
       {!videoUrl ? (
-        <div className="text-center p-10">
-          <div
-            onClick={onUploadClick}
-            className="w-24 h-24 rounded-full bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 flex items-center justify-center mx-auto mb-6 cursor-pointer transition-all border border-indigo-500/30 hover:scale-105"
+        <div className="flex-1 flex items-center justify-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="text-center p-8"
           >
-            <Upload className="w-10 h-10" />
-          </div>
-          <h2 className="text-2xl font-serif text-white mb-2">
-            Upload Dance Video
-          </h2>
-          <p className="text-gray-400 max-w-md mx-auto">
-            Select a short clip (~15s) of Indian Classical Dance to analyze
-            mudras and abhinaya.
-          </p>
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onUploadClick}
+              className="w-16 h-16 bg-gradient-to-br from-cyan-600 to-sky-700 hover:from-cyan-700 hover:to-sky-800 rounded-lg flex items-center justify-center mx-auto mb-4 cursor-pointer transition-all shadow-lg shadow-cyan-500/40"
+            >
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </motion.div>
+            <h2 className="text-base font-medium text-cyan-100 mb-2">
+              Upload Video
+            </h2>
+            <p className="text-emerald-400 text-sm max-w-xs mx-auto font-medium">
+              Select a classical dance video for analysis
+            </p>
+          </motion.div>
         </div>
       ) : (
         <>
-          <video
-            ref={videoRef}
-            src={videoUrl}
-            className="w-full h-full object-contain"
-            controls
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            playsInline
-            crossOrigin="anonymous"
-          >
-            {captionUrl && (
-              <track
-                ref={trackRef}
-                label="Nritya Analysis"
-                kind="metadata"
-                srcLang="en"
-                src={captionUrl}
-              />
+          {/* Video Container */}
+          <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="max-w-full max-h-full object-contain"
+              controls
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
+              playsInline
+              crossOrigin="anonymous"
+            >
+              {captionUrl && (
+                <track
+                  ref={trackRef}
+                  label="Nritya Analysis"
+                  kind="metadata"
+                  srcLang="en"
+                  src={captionUrl}
+                />
+              )}
+            </video>
+
+            {/* Analyze Overlay */}
+            {isAnalyzing && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center z-20"
+              >
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                  className="w-12 h-12 border-4 border-slate-700 border-t-cyan-400 rounded-full"
+                />
+                <p className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mt-3 text-sm font-bold">
+                  Analyzing...
+                </p>
+              </motion.div>
             )}
-          </video>
+          </div>
 
-          {/* Analyze Overlay / Loading State */}
-          {isAnalyzing && (
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-20">
-              <div className="relative">
-                <div className="w-20 h-20 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-indigo-400 animate-pulse" />
-                </div>
-              </div>
-              <p className="text-indigo-300 font-serif mt-4 animate-pulse tracking-wide">
-                Analysing Movement...
-              </p>
-              <p className="text-xs text-indigo-500/50 mt-2 font-mono">
-                Ensuring continuous frame tracking
-              </p>
-            </div>
-          )}
-
-          {/* Enhanced Custom Subtitle Overlay (Bottom Center) - Always shows something if loaded */}
+          {/* Caption Area Below Video */}
           {!isAnalyzing && activeSegment && (
-            <div className="absolute bottom-12 left-0 right-0 pointer-events-none z-10 flex flex-col items-center justify-end">
-              <div className="bg-black/70 backdrop-blur-md border-x-4 border-amber-500 px-4 py-2 rounded-lg shadow-2xl transform transition-all duration-300 max-w-2xl text-center">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-indigo-300">
-                    {danceStyle || "Detected Step"}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="bg-slate-900 border-t border-cyan-500 px-6 py-4"
+            >
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-emerald-400">
+                    {danceStyle || "Detected"}
                   </span>
-                  <span className="w-1 h-1 rounded-full bg-gray-500"></span>
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">
+                  <span className="w-1 h-1 rounded-full bg-cyan-500"></span>
+                  <span className="text-xs font-bold text-sky-400">
                     {activeSegment.expression}
                   </span>
                 </div>
 
-                <h3 className="text-2xl font-serif text-white font-bold mb-2 drop-shadow-lg tracking-tight">
+                <h3 className="text-base font-display text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 font-bold mb-2 text-center">
                   {activeSegment.mudraName}
                 </h3>
 
-                <p className="text-md text-gray-100 font-medium leading-relaxed drop-shadow-md">
+                <p className="text-sm text-emerald-300 leading-relaxed text-center font-medium">
                   {activeSegment.description}
                 </p>
               </div>
-            </div>
+            </motion.div>
           )}
         </>
       )}
