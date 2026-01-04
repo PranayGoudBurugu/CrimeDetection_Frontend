@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-  currentPage: string;
-  onNavigate: (page: string) => void;
-}
-
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
-  children, 
-  currentPage,
-  onNavigate 
-}) => {
+export const DashboardLayout: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Get current page from URL path
+  const currentPage = location.pathname.split('/').pop() || 'analysis';
   
   const navItems = [
     { id: 'analysis', label: 'Analysis' },
@@ -20,6 +16,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     { id: 'profile', label: 'Profile' },
     { id: 'settings', label: 'Settings' },
   ];
+  
+  const handleNavigate = (page: string) => {
+    navigate(`/dashboard/${page}`);
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
@@ -71,7 +72,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 transition={{ delay: 0.1 * index, duration: 0.4 }}
                 whileHover={{ scale: 1.02, x: 4 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => handleNavigate(item.id)}
                 className={`w-full px-3 py-2 text-left text-sm font-medium rounded-md transition-colors ${
                   currentPage === item.id
                     ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-pink-500/50'
@@ -89,7 +90,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => onNavigate('profile')}
+            onClick={() => handleNavigate('profile')}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 transition-colors text-left"
           >
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30">
@@ -135,10 +136,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   {navItems.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => {
-                        onNavigate(item.id);
-                        setIsMobileMenuOpen(false);
-                      }}
+                      onClick={() => handleNavigate(item.id)}
                       className={`w-full px-4 py-3 text-left text-sm font-medium rounded-lg transition-colors touch-manipulation ${
                         currentPage === item.id
                           ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-pink-500/50'
@@ -154,10 +152,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               {/* Profile Section */}
               <div className="border-t border-purple-900 p-3">
                 <button
-                  onClick={() => {
-                    onNavigate('profile');
-                    setIsMobileMenuOpen(false);
-                  }}
+                  onClick={() => handleNavigate('profile')}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 transition-colors text-left"
                 >
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30">
@@ -176,7 +171,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        {children}
+        <Outlet />
       </main>
     </div>
   );
