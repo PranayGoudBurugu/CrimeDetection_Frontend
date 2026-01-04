@@ -37,12 +37,12 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-pink-500"
+        className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-border"
       >
-        <h3 className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+        <h3 className="text-base sm:text-lg font-bold text-primary">
           Analysis Timeline
         </h3>
-        <p className="text-xs sm:text-sm text-blue-300 mt-1 font-medium">
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
           Detected gestures and expressions
         </p>
       </motion.div>
@@ -53,7 +53,7 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-center text-pink-400 py-12"
+            className="text-center text-muted-foreground py-12"
           >
             <p className="text-sm font-bold">No analysis data yet</p>
           </motion.div>
@@ -74,32 +74,32 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
               onClick={() => onSeek(segment.startTime)}
               className={`relative p-4 rounded-lg cursor-pointer transition-all border ${
                 isActive 
-                  ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 border-pink-400 shadow-xl shadow-pink-500/50' 
-                  : 'bg-slate-800 border-purple-500 hover:border-pink-400 hover:bg-slate-700'
+                  ? 'bg-primary text-primary-foreground border-ring shadow-xl' 
+                  : 'bg-card border-border hover:border-accent hover:bg-accent/20'
               }`}
             >
               <div className="flex items-start justify-between mb-2">
-                <h4 className={`font-bold text-base ${isActive ? 'text-white' : 'text-blue-400'}`}>
+                <h4 className={`font-bold text-base ${isActive ? 'text-primary-foreground' : 'text-primary'}`}>
                   {segment.mudraName}
                 </h4>
-                <span className={`text-xs font-bold ${isActive ? 'text-pink-100' : 'text-purple-300'}`}>
+                <span className={`text-xs font-bold ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                   {segment.startTime.toFixed(1)}s
                 </span>
               </div>
 
               <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${
-                isActive ? 'text-pink-200' : 'text-purple-400'
+                isActive ? 'text-primary-foreground/80' : 'text-secondary'
               }`}>
                 {segment.expression}
               </div>
 
-              <p className={`text-sm leading-relaxed ${isActive ? 'text-pink-50' : 'text-blue-200'}`}>
+              <p className={`text-sm leading-relaxed ${isActive ? 'text-primary-foreground/90' : 'text-foreground'}`}>
                 {segment.description}
               </p>
               
               <div className="mt-3">
                 <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-gradient-to-r from-blue-700 to-purple-700 text-blue-100'
+                  isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-secondary text-secondary-foreground'
                 }`}>
                   {segment.meaning}
                 </span>

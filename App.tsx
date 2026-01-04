@@ -6,6 +6,8 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import LandingPage from "./pages/LandingPage";
+import AuthPage from "./pages/AuthPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App: React.FC = () => {
   return (
@@ -13,16 +15,24 @@ const App: React.FC = () => {
       <Routes>
         {/* Landing Page Route */}
         <Route path="/" element={<LandingPage />} />
-        
+
+        {/* Auth Page Route */}
+        <Route path="/auth" element={<AuthPage />} />
+
         {/* Dashboard Routes */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="/dashboard/analysis" replace />} />
-          <Route path="analysis" element={<AnalysisPage />} />
-          <Route path="history" element={<HistoryPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="settings" element={<SettingsPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route
+              index
+              element={<Navigate to="/dashboard/analysis" replace />}
+            />
+            <Route path="analysis" element={<AnalysisPage />} />
+            <Route path="history" element={<HistoryPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
         </Route>
-        
+
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

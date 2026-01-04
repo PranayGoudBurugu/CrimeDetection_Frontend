@@ -36,20 +36,20 @@ export const HistoryPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-slate-950 overflow-auto">
+    <div className="h-full bg-background overflow-auto">
       {/* Header */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="bg-slate-900 border-b border-purple-500 pl-4 pr-14 sm:px-6 lg:pl-8 lg:pr-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-10"
+        className="bg-card border-b border-border pl-4 pr-14 sm:px-6 lg:pl-8 lg:pr-8 py-3 sm:py-4 lg:py-6 sticky top-0 z-10"
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-primary">
               Analysis History
             </h2>
-            <p className="text-xs sm:text-sm text-blue-300 mt-1 font-medium">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
               View your previously analyzed dance videos
             </p>
           </div>
@@ -58,7 +58,7 @@ export const HistoryPage: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={clearHistory}
-              className="px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-950 rounded-lg transition-colors border border-red-500 hover:border-red-400"
+              className="px-4 py-2 text-sm font-bold text-destructive hover:bg-destructive/10 rounded-lg transition-colors border border-destructive"
             >
               Clear History
             </motion.button>
@@ -70,9 +70,9 @@ export const HistoryPage: React.FC = () => {
       <div className="p-4 sm:p-6 lg:p-8">
         {history.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/50">
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <svg
-                className="w-8 h-8 text-white"
+                className="w-8 h-8 text-primary-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -85,10 +85,10 @@ export const HistoryPage: React.FC = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-blue-400 mb-2">
+            <h3 className="text-lg font-semibold text-primary mb-2">
               No analysis history yet
             </h3>
-            <p className="text-purple-300">
+            <p className="text-muted-foreground">
               Your analyzed videos will appear here
             </p>
           </div>
@@ -101,24 +101,24 @@ export const HistoryPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1, duration: 0.4 }}
                 whileHover={{ scale: 1.02, y: -4 }}
-                className="bg-slate-900 rounded-xl border-2 border-purple-500 p-6 hover:border-pink-400 hover:shadow-xl hover:shadow-pink-500/20 transition-all cursor-pointer"
+                className="bg-card rounded-xl border-2 border-border p-6 hover:border-accent hover:shadow-xl transition-all cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-4 gap-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-blue-400 mb-1 overflow-hidden">
+                    <h3 className="font-bold text-primary mb-1 overflow-hidden">
                       <span className="block truncate hover:animate-marquee whitespace-nowrap">
                         {item.fileName}
                       </span>
                     </h3>
-                    <p className="text-xs text-purple-300 font-medium overflow-hidden">
+                    <p className="text-xs text-muted-foreground font-medium overflow-hidden">
                       <span className="block truncate hover:animate-marquee whitespace-nowrap">
                         {formatDate(item.timestamp)}
                       </span>
                     </p>
                   </div>
-                  <div className="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/50">
+                  <div className="w-10 h-10 flex-shrink-0 bg-primary rounded-lg flex items-center justify-center shadow-md">
                     <svg
-                      className="w-5 h-5 text-white"
+                      className="w-5 h-5 text-primary-foreground"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -134,17 +134,17 @@ export const HistoryPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2 border-t border-slate-700 gap-2">
-                    <span className="text-sm text-purple-400 font-medium">Dance Style</span>
-                    <span className="text-sm font-bold text-pink-300 overflow-hidden">
+                  <div className="flex items-center justify-between py-2 border-t border-border gap-2">
+                    <span className="text-sm text-muted-foreground font-medium">Dance Style</span>
+                    <span className="text-sm font-bold text-secondary overflow-hidden">
                       <span className="block truncate hover:animate-marquee whitespace-nowrap">
                         {item.danceStyle}
                       </span>
                     </span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-t border-slate-700 gap-2">
-                    <span className="text-sm text-purple-400 font-medium">Segments</span>
-                    <span className="text-sm font-bold text-blue-300 truncate">
+                  <div className="flex items-center justify-between py-2 border-t border-border gap-2">
+                    <span className="text-sm text-muted-foreground font-medium">Segments</span>
+                    <span className="text-sm font-bold text-foreground truncate">
                       {item.segmentCount}
                     </span>
                   </div>
@@ -153,7 +153,7 @@ export const HistoryPage: React.FC = () => {
                 <motion.button 
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full mt-4 px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 rounded-lg transition-all shadow-lg shadow-purple-500/30"
+                  className="w-full mt-4 px-4 py-2 text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg transition-all shadow-md"
                 >
                   View Details
                 </motion.button>

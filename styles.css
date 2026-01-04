@@ -1,23 +1,133 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Tiro+Devanagari+Sanskrit:ital@0;1&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Theme Variables - Dark Amber/Orange/Rose Theme */
+:root {
+  /* Base colors matching LandingPage dark theme */
+  --background: #08080c;
+  --foreground: #ffffff;
+  --card: #111115;
+  --card-foreground: #ffffff;
+  --popover: #111115;
+  --popover-foreground: #ffffff;
+
+  /* Primary: Amber-500 */
+  --primary: #f59e0b;
+  --primary-foreground: #000000;
+
+  /* Secondary: Orange-400 */
+  --secondary: #fb923c;
+  --secondary-foreground: #000000;
+
+  /* Muted: Gray tones */
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: #9ca3af;
+
+  /* Accent: Rose-500 */
+  --accent: #f43f5e;
+  --accent-foreground: #ffffff;
+
+  /* Destructive */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* Borders and inputs */
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #fbbf24;
+
+  /* Chart colors - amber/orange/rose gradient */
+  --chart-1: #fbbf24;
+  --chart-2: #f59e0b;
+  --chart-3: #fb923c;
+  --chart-4: #f97316;
+  --chart-5: #f43f5e;
+
+  /* Sidebar - slightly lighter dark */
+  --sidebar: #0c0c10;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #f59e0b;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #fb923c;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-ring: #fbbf24;
+
+  /* Typography */
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+
+  /* Spacing and radius */
+  --radius: 0.5rem;
+  --spacing: 0.25rem;
+
+  /* Shadows with amber tint */
+  --shadow-color: rgba(251, 191, 36, 0.2);
+  --shadow-2xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-xs: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3),
+    0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Light mode (optional - if you want to support a light theme too) */
+.light {
+  --background: #fafafa;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #f59e0b;
+  --primary-foreground: #000000;
+  --secondary: #fb923c;
+  --secondary-foreground: #000000;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f43f5e;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #f59e0b;
+  --sidebar: #f5f5f5;
+  --sidebar-foreground: #171717;
+  --sidebar-primary: #f59e0b;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #fb923c;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #f59e0b;
+}
+
 /* Prevent white background flash and disable overscrolling */
 html {
   scroll-behavior: smooth;
-  background-color: #08080C;
+  background-color: var(--background);
   overflow-x: hidden;
 }
 
-html, body {
-  background-color: #08080C;
+html,
+body {
+  background-color: var(--background);
+  color: var(--foreground);
   overscroll-behavior: none;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
   width: 100%;
+  font-family: var(--font-sans);
 }
 
 /* Prevent horizontal scroll on mobile */
@@ -38,16 +148,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #08080C;
+  background-color: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgb(251 191 36) 0%, rgb(249 115 22) 100%);
+  background: var(--primary);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgb(251 191 36) 0%, rgb(244 63 94) 100%);
+  background: var(--secondary);
 }
 
 #root {
@@ -75,10 +185,7 @@ body {
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em var(--primary));
 }
 
 @keyframes logo-spin {
@@ -101,5 +208,5 @@ body {
 }
 
 .read-the-docs {
-  color: #888;
+  color: var(--muted-foreground);
 }

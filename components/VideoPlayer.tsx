@@ -171,10 +171,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   );
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-950">
+    <div className="w-full h-full flex flex-col bg-background">
       {!videoUrl ? (
         <div className="flex-1 flex items-center justify-center">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
@@ -184,16 +184,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               onClick={onUploadClick}
-              className="w-16 h-16 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 rounded-lg flex items-center justify-center mx-auto mb-4 cursor-pointer transition-all shadow-lg shadow-purple-500/40"
+              className="w-16 h-16 bg-primary hover:bg-primary/90 rounded-lg flex items-center justify-center mx-auto mb-4 cursor-pointer transition-all shadow-lg"
             >
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <svg
+                className="w-8 h-8 text-primary-foreground"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
               </svg>
             </motion.div>
-            <h2 className="text-base font-medium text-blue-100 mb-2">
+            <h2 className="text-base font-medium text-foreground mb-2">
               Upload Video
             </h2>
-            <p className="text-purple-400 text-sm max-w-xs mx-auto font-medium">
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto font-medium">
               Select a classical dance video for analysis
             </p>
           </motion.div>
@@ -225,18 +235,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
             {/* Analyze Overlay */}
             {isAnalyzing && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center z-20"
+                className="absolute inset-0 bg-foreground/90 backdrop-blur-sm flex flex-col items-center justify-center z-20"
               >
-                <motion.div 
+                <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                  className="w-12 h-12 border-4 border-slate-700 border-t-blue-400 rounded-full"
+                  className="w-12 h-12 border-4 border-muted border-t-primary rounded-full"
                 />
-                <p className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 mt-3 text-sm font-bold">
+                <p className="text-primary mt-3 text-sm font-bold">
                   Analyzing...
                 </p>
               </motion.div>
@@ -245,28 +255,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
           {/* Caption Area Below Video */}
           {!isAnalyzing && activeSegment && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="bg-slate-900 border-t border-purple-500 px-3 sm:px-4 lg:px-6 py-3 sm:py-4"
+              className="bg-card border-t border-border px-3 sm:px-4 lg:px-6 py-3 sm:py-4"
             >
               <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
-                  <span className="text-xs font-bold text-blue-400">
+                  <span className="text-xs font-bold text-primary">
                     {danceStyle || "Detected"}
                   </span>
-                  <span className="w-1 h-1 rounded-full bg-purple-500"></span>
-                  <span className="text-xs font-bold text-pink-400">
+                  <span className="w-1 h-1 rounded-full bg-secondary"></span>
+                  <span className="text-xs font-bold text-accent">
                     {activeSegment.expression}
                   </span>
                 </div>
 
-                <h3 className="text-sm sm:text-base font-display text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 font-bold mb-2 text-center">
+                <h3 className="text-sm sm:text-base font-display text-primary font-bold mb-2 text-center">
                   {activeSegment.mudraName}
                 </h3>
 
-                <p className="text-xs sm:text-sm text-purple-300 leading-relaxed text-center font-medium">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed text-center font-medium">
                   {activeSegment.description}
                 </p>
               </div>
