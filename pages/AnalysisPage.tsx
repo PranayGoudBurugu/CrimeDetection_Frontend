@@ -5,6 +5,7 @@ import { AnalysisState, AnalysisResponse } from "../types";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { Timeline } from "../components/Timeline";
 
+
 export const AnalysisPage: React.FC = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState>(
