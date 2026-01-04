@@ -71,6 +71,12 @@ const AuthPage = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const getRedirectUrl = () => {
+    const url = window.location.origin;
+    // Ensure it ends with /auth and handles potential trailing slashes
+    return `${url.endsWith("/") ? url.slice(0, -1) : url}/auth`;
+  };
+
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
@@ -79,7 +85,7 @@ const AuthPage = () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth`,
+        emailRedirectTo: getRedirectUrl(),
       },
     });
 
@@ -95,7 +101,7 @@ const AuthPage = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth`,
+        redirectTo: getRedirectUrl(),
       },
     });
     if (error) setAuthError(error.message);
