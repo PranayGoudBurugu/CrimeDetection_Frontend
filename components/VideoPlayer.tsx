@@ -4,8 +4,10 @@ import { MudraAnalysis } from "../types";
 
 interface VideoPlayerProps {
   videoFile: File | null;
+  videoUrl?: string | null;  // New prop
   analysisSegments: MudraAnalysis[];
   danceStyle?: string;
+  storyline?: string; // New prop for end card
   currentTime: number;
   onTimeUpdate: (time: number) => void;
   onUploadClick: () => void;
@@ -14,8 +16,10 @@ interface VideoPlayerProps {
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   videoFile,
+  videoUrl: externalVideoUrl,
   analysisSegments,
   danceStyle,
+  storyline,
   currentTime,
   onTimeUpdate,
   onUploadClick,
@@ -29,17 +33,39 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [processedSegments, setProcessedSegments] = useState<MudraAnalysis[]>(
     []
   );
+  const [showEndCard, setShowEndCard] = useState(false); // State for end card
 
-  // Sync video URL when file changes
+  // Sync video URL when file changes or external URL provided
   useEffect(() => {
     if (videoFile) {
       const url = URL.createObjectURL(videoFile);
       setVideoUrl(url);
       setDuration(0);
       setProcessedSegments([]);
+      setShowEndCard(false);
       return () => URL.revokeObjectURL(url);
+    } else if (externalVideoUrl) {
+      setVideoUrl(externalVideoUrl);
+      setDuration(0);
+      setProcessedSegments([]);
+      setShowEndCard(false);
     }
-  }, [videoFile]);
+  }, [videoFile, externalVideoUrl]);
+
+  // Handle video end
+  const handleVideoEnded = () => {
+    if (storyline) {
+      setShowEndCard(true);
+    }
+  };
+
+  const handleReplay = () => {
+    setShowEndCard(false);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
 
   // Process Segments for Continuity (Fill Gaps)
   useEffect(() => {
@@ -221,6 +247,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               onLoadedMetadata={handleLoadedMetadata}
               playsInline
               crossOrigin="anonymous"
+              onEnded={handleVideoEnded}
             >
               {captionUrl && (
                 <track
@@ -251,6 +278,34 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 </p>
               </motion.div>
             )}
+
+            {/* Storyline End Card */}
+            {showEndCard && storyline && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 z-20 text-center"
+              >
+                <h3 className="text-xl font-display font-bold text-white mb-4">
+                  Storyline Generated
+                </h3>
+                <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-2xl italic mb-6">
+                  "{storyline}"
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleReplay}
+                  className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-lg flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Replay Video
+                </motion.button>
+              </motion.div>
+            )}
           </div>
 
           {/* Caption Area Below Video */}
@@ -272,9 +327,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   </span>
                 </div>
 
-                <h3 className="text-sm sm:text-base font-display text-primary font-bold mb-2 text-center">
+                <h3 className="text-sm sm:text-base font-display text-primary font-bold mb-1 text-center">
                   {activeSegment.mudraName}
                 </h3>
+
+                <p className="text-xs text-secondary font-bold text-center mb-2">
+                  Meaning: {activeSegment.meaning}
+                </p>
 
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed text-center font-medium">
                   {activeSegment.description}

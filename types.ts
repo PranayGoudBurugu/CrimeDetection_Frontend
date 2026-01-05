@@ -10,6 +10,7 @@ export interface MudraAnalysis {
 export interface AnalysisResponse {
   danceStyle?: string;
   segments: MudraAnalysis[];
+  storyline?: string; // AI-generated narrative summary
 }
 
 export enum AnalysisState {

@@ -1,191 +1,179 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResponse } from "../types";
 
-// Initialize Gemini Client
-// Note: API Key must be in process.env.API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+/**
+ * Service to interact with the Backend API for dance video analysis
+ * The backend handles:
+ * - Video upload
+ * - Gemini AI analysis
+ * - Video annotation (with FFmpeg)
+ * - Storyline generation
+ * - Database storage
+ */
 
-const SYSTEM_INSTRUCTION = `
-You are an expert scholar and critic of Indian Classical Dance (focusing on Bharatanatyam, Odissi, Kathak, and Kuchipudi). 
-Your task is to analyze a video clip frame-by-frame and create a CONTINUOUS narrative of the performance.
+// Backend API URL - adjust based on your setup
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005';
 
-
-**CRITICAL RULES FOR TIMING:**
-1. **NO GAPS**: The analysis must cover the video from 0.0 seconds to the very end.
-2. **CONTINUITY**: The End Time of one segment MUST be the Start Time of the next segment.
-3. **MINIMUM DURATION**: Each segment MUST be AT LEAST 1.5-3 seconds long. Do NOT create segments shorter than 1 second.
-4. **REALISTIC TIMING**: A typical mudra or pose is held for 2-4 seconds. Transitions take 1-2 seconds. Match your timing to realistic dance movements.
-5. **EXAMPLE TIMING**: For a 10-second video, create 3-5 segments (e.g., 0.0-2.5s, 2.5-5.0s, 5.0-7.5s, 7.5-10.0s).
-
-**CONTENT RULES:**
-1. **DEFAULT STATE**: If no specific hand gesture (Mudra) is clear, or the dancer is transitioning, label the Mudra as "Nritta / Movement" or "Transition" and describe the body posture.
-2. **Nritya & Mudras**: Identify the specific hand gestures (Samyuta and Asamyuta Hastas).
-3. **Abhinaya (Expression)**: Analyze facial expressions and the corresponding sentiment (Rasa/Bhava).
-
-Return the output strictly as a JSON object containing the identified style and an array of segments with proper timing.
-`;
-
+/**
+ * Analyze a dance video using the backend API
+ * 
+ * @param file - The video file to analyze
+ * @param customPrompt - Optional custom prompt for analysis
+ * @returns Promise<AnalysisResponse> - The analysis result with segments and storyline
+ */
 export const analyzeDanceVideo = async (
-  file: File
+  file: File,
+  customPrompt?: string
 ): Promise<AnalysisResponse> => {
   try {
-    // 1. Convert File to Base64
-    const base64Data = await fileToGenerativePart(file);
+    console.log('📤 Uploading video to backend for analysis...');
 
-    // 2. Define the schema for structured JSON output
-    const responseSchema = {
-      type: Type.OBJECT,
-      properties: {
-        danceStyle: {
-          type: Type.STRING,
-          description:
-            "The likely style of dance (e.g., Bharatanatyam, Odissi)",
-        },
-        segments: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              startTime: {
-                type: Type.NUMBER,
-                description: "Start time of the gesture in seconds",
-              },
-              endTime: {
-                type: Type.NUMBER,
-                description: "End time of the gesture in seconds",
-              },
-              mudraName: {
-                type: Type.STRING,
-                description: "Sanskrit name of the Mudra or 'Transition'",
-              },
-              meaning: {
-                type: Type.STRING,
-                description: "Brief meaning or context",
-              },
-              expression: {
-                type: Type.STRING,
-                description: "Facial expression or Rasa",
-              },
-              description: {
-                type: Type.STRING,
-                description: "A continuous description of the movement",
-              },
-            },
-            required: [
-              "startTime",
-              "endTime",
-              "mudraName",
-              "meaning",
-              "expression",
-              "description",
-            ],
-          },
-        },
-      },
-      required: ["danceStyle", "segments"],
-    };
+    // Create FormData to send the video file
+    const formData = new FormData();
+    formData.append('video', file); // Backend expects 'video' field
 
-    // 3. Call Gemini API
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", // Updated to valid model
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              inlineData: {
-                mimeType: file.type,
-                data: base64Data,
-              },
-            },
-            {
-              text: "Analyze this dance video continuously. Create segments that are AT LEAST 1.5-3 seconds long each. Each mudra or movement should have realistic timing (2-4 seconds for held poses, 1-2 seconds for transitions). Ensure captions flow seamlessly without flickering or rapid changes.",
-            },
-          ],
-        },
-      ],
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        responseMimeType: "application/json",
-        responseSchema: responseSchema,
-        temperature: 0.4,
-      },
-    });
-
-    const textResponse = response.text;
-    if (!textResponse) {
-      throw new Error("No response from AI model");
+    if (customPrompt) {
+      formData.append('prompt', customPrompt);
     }
 
-    const parsed = JSON.parse(textResponse) as AnalysisResponse;
+    // Send to backend API
+    const response = await fetch(`${API_BASE_URL}/getanalysis`, {
+      method: 'POST',
+      body: formData,
+      // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
+    });
 
-    // Post-process: Validate and fix segment timing
-    const validatedSegments = validateSegmentTiming(parsed.segments);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({
+        error: `HTTP Error ${response.status}: ${response.statusText}`
+      }));
+      throw new Error(errorData.error || errorData.message || 'Failed to analyze video');
+    }
 
+    const result = await response.json();
+    console.log('✅ Analysis completed:', result);
+
+    // Extract the analysis data from the backend response
+    if (!result.success || !result.data || !result.data.ml_response) {
+      throw new Error('Invalid response from backend');
+    }
+
+    const mlResponse = result.data.ml_response;
+
+    // Return in the format expected by the frontend
     return {
-      ...parsed,
-      segments: validatedSegments,
+      danceStyle: mlResponse.danceStyle,
+      segments: mlResponse.segments || [],
+      storyline: mlResponse.storyline || result.storyline, // Storyline from backend
     };
+
   } catch (error: any) {
-    console.error("Error analyzing video:", error);
-    // Surface a clearer message for quota / rate-limit errors
-    const msg = error?.message || "";
-    const status = error?.status || error?.code || "";
-    if (
-      status === 429 ||
-      status === "RESOURCE_EXHAUSTED" ||
-      /quota|Quota|exceeded|rate limit/i.test(msg)
-    ) {
-      throw new Error(
-        "Gemini quota/rate limit exceeded. Check your API key, billing and project quotas (https://ai.google.dev/gemini-api/docs/rate-limits)."
-      );
+    console.error('❌ Error analyzing video:', error);
+
+    // Handle specific error cases
+    if (error.message.includes('fetch')) {
+      throw new Error('Cannot connect to backend server. Please ensure the backend is running.');
+    }
+
+    if (error.message.includes('quota') || error.message.includes('rate limit')) {
+      throw new Error('API quota exceeded. Please try again later.');
     }
 
     throw error;
   }
 };
 
-// Validate and fix segment timing to ensure realistic durations
-const validateSegmentTiming = (segments: any[]): any[] => {
-  if (!segments || segments.length === 0) return segments;
+/**
+ * Get analysis history from the backend
+ * 
+ * @param options - Query options (status, limit, offset)
+ * @returns Promise with array of analysis records
+ */
+export const getAnalysisHistory = async (options?: {
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<any[]> => {
+  try {
+    const params = new URLSearchParams();
+    if (options?.status) params.append('status', options.status);
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.offset) params.append('offset', options.offset.toString());
 
-  const MIN_DURATION = 1.0; // Minimum 1 second per segment
-  const sorted = [...segments].sort((a, b) => a.startTime - b.startTime);
-  const validated: any[] = [];
+    const response = await fetch(`${API_BASE_URL}/history?${params}`);
 
-  for (let i = 0; i < sorted.length; i++) {
-    const current = sorted[i];
-    const duration = current.endTime - current.startTime;
-
-    // If segment is too short, try to merge with next or extend
-    if (duration < MIN_DURATION && i < sorted.length - 1) {
-      const next = sorted[i + 1];
-      // Merge current with next
-      validated.push({
-        ...current,
-        endTime: next.endTime,
-        description: `${current.description} ${next.description}`,
-      });
-      i++; // Skip next since we merged it
-    } else {
-      validated.push(current);
+    if (!response.ok) {
+      throw new Error('Failed to fetch history');
     }
-  }
 
-  return validated;
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error('Error fetching history:', error);
+    throw error;
+  }
 };
 
-// Helper to convert File to Base64 string (without data: prefix)
-const fileToGenerativePart = async (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      // Remove the "data:video/mp4;base64," prefix
-      const base64 = result.split(",")[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+/**
+ * Get a specific analysis by ID
+ * 
+ * @param id - Analysis ID
+ * @returns Promise with analysis data
+ */
+export const getAnalysisById = async (id: string): Promise<any> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/analysis/${id}`);
+
+    if (!response.ok) {
+      throw new Error('Analysis not found');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching analysis:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete an analysis
+ * 
+ * @param id - Analysis ID
+ * @returns Promise<boolean> - Success status
+ */
+export const deleteAnalysis = async (id: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/analysis/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete analysis');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting analysis:', error);
+    throw error;
+  }
+};
+
+/**
+ * Download the annotated video (if available)
+ * 
+ * @param filename - The filename of the annotated video
+ * @returns URL to download the video
+ */
+export const getAnnotatedVideoUrl = (filename: string): string => {
+  return `${API_BASE_URL}/uploads/annotated/${filename}`;
+};
+
+/**
+ * Download the subtitle file (if available)
+ * 
+ * @param filename - The filename of the subtitle file (.srt)
+ * @returns URL to download the subtitle file
+ */
+export const getSubtitleUrl = (filename: string): string => {
+  return `${API_BASE_URL}/uploads/annotated/${filename}`;
 };
