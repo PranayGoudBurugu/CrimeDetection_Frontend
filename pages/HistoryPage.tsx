@@ -7,6 +7,7 @@ interface AnalysisRecord {
   id: string;
   video_filename: string;
   stored_filename?: string; // New field from backend
+  video_url?: string; // Public URL from backend (ImageKit or local)
   created_at: string;
   status: string;
   ml_response: {
@@ -52,20 +53,14 @@ export const HistoryPage: React.FC = () => {
     });
   };
 
-  // Helper to construct video URL from filename
-  // Assumes backend serves uploads at /uploads
-  const getVideoUrl = (filename: string) => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005';
-    return `${API_URL}/uploads/${filename}`;
-  };
-
   const handleVideoClick = (item: AnalysisRecord) => {
-    // Use stored_filename for the URL, fallback to video_filename if missing
-    const filename = item.stored_filename || item.video_filename;
+    // Use video_url from backend (ImageKit URL or local URL)
+    const videoUrl = item.video_url || '';
+
     navigate('/dashboard/analysis', {
       state: {
         analysisData: item.ml_response,
-        videoUrl: getVideoUrl(filename)
+        videoUrl: videoUrl
       }
     });
   };
@@ -193,7 +188,7 @@ export const HistoryPage: React.FC = () => {
                 {/* Video Preview */}
                 <div className="mb-4 bg-black rounded-lg overflow-hidden aspect-video relative">
                   <video
-                    src={getVideoUrl(item.stored_filename || item.video_filename)}
+                    src={item.video_url || ''}
                     className="w-full h-full object-contain pointer-events-none"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
