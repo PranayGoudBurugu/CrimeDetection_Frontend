@@ -4,7 +4,7 @@
  * Provides functions to interact with the backend API
  */
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5005";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // ============================================
 // VIDEO ANALYSIS
