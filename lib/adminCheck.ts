@@ -6,7 +6,8 @@
 
 // List of admin email addresses
 const ADMIN_EMAILS = [
-    'anuragnarsingoju@gmail.com'
+    'anuragnarsingoju@gmail.com',
+    'aashish17405@gmail.com'
 ];
 
 /**

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { isAdmin } from "@/lib/adminCheck";
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export const ProfilePage: React.FC = () => {
             session.user.user_metadata?.full_name ||
             session.user.email?.split("@")[0] ||
             "User",
-            avatar_url: session.user.user_metadata?.avatar_url || "",
+          avatar_url: session.user.user_metadata?.avatar_url || "",
         }));
       }
     };
@@ -85,11 +86,8 @@ export const ProfilePage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 className="px-4 py-2 text-sm font-bold text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-all shadow-md"
               >
-                Change Photo
+                {isAdmin ? "Admin" : "User"}
               </motion.button>
-              <p className="text-xs text-muted-foreground mt-2 font-medium">
-                JPG, PNG or GIF. Max size 2MB
-              </p>
             </div>
           </div>
 
@@ -103,76 +101,18 @@ export const ProfilePage: React.FC = () => {
               <label className="block text-sm font-bold text-primary mb-2">
                 Full Name
               </label>
-              <input
-                type="text"
-                value={profile.name}
-                onChange={(e) =>
-                  setProfile({ ...profile, name: e.target.value })
-                }
-                className="w-full px-4 py-2 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium"
-              />
+              <label className="w-full px-4 py-2 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium">
+                {profile.name}
+              </label>
             </motion.div>
 
             <div>
               <label className="block text-sm font-bold text-primary mb-2">
                 Email
               </label>
-              <input
-                type="email"
-                value={profile.email}
-                onChange={(e) =>
-                  setProfile({ ...profile, email: e.target.value })
-                }
-                className="w-full px-4 py-2 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-primary mb-2">
-                Organization
+              <label className="w-full px-4 py-2 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium">
+                {profile.email}
               </label>
-              <input
-                type="text"
-                value={profile.organization}
-                onChange={(e) =>
-                  setProfile({ ...profile, organization: e.target.value })
-                }
-                className="w-full px-4 py-2 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium"
-                placeholder="Optional"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-primary mb-2">
-                Bio
-              </label>
-              <textarea
-                value={profile.bio}
-                onChange={(e) =>
-                  setProfile({ ...profile, bio: e.target.value })
-                }
-                rows={4}
-                className="w-full px-4 py-2 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring resize-none font-medium"
-                placeholder="Tell us about yourself"
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSave}
-                className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-bold transition-all shadow-md"
-              >
-                Save Changes
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-2 bg-muted text-muted-foreground border-2 border-border rounded-lg hover:border-accent hover:text-accent-foreground text-sm font-bold transition-all"
-              >
-                Cancel
-              </motion.button>
             </div>
           </div>
         </motion.div>

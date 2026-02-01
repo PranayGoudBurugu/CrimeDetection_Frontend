@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useLocation } from "react-router-dom"; // Import useLocation
-import { analyzeDanceVideo } from "../services/geminiService";
+import { useLocation } from "react-router-dom";
+import { uploadVideoForAnalysis } from "../services/backendApi";
+import { supabase } from "../lib/supabase";
 import { AnalysisState, AnalysisResponse } from "../types";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { Timeline } from "../components/Timeline";
-
 
 import { generateAnnotatedVideo } from "../services/videoProcessor";
 
@@ -14,18 +14,32 @@ export const AnalysisPage: React.FC = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null); // New state for remote URL
   const [analysisState, setAnalysisState] = useState<AnalysisState>(
-    AnalysisState.IDLE
+    AnalysisState.IDLE,
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [processStatus, setProcessStatus] = useState<string>("");
 
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(
-    null
+    null,
   );
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch user email on mount
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      }
+    };
+    getUser();
+  }, []);
 
   // Initialize from history state if available
   // Initialize from history state if available
@@ -72,12 +86,12 @@ export const AnalysisPage: React.FC = () => {
         fileToProcess,
         analysisResult.segments,
         analysisResult.storyline || "Analysis Completed",
-        (msg) => setProcessStatus(msg)
+        (msg) => setProcessStatus(msg),
       );
 
       // Created download link
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `annotated-analysis-${Date.now()}.${extension}`;
       document.body.appendChild(a);
@@ -98,7 +112,7 @@ export const AnalysisPage: React.FC = () => {
     if (file) {
       if (file.size > 25 * 1024 * 1024) {
         setErrorMsg(
-          "File is too large. Please select a video under 25MB (approx 15s)."
+          "File is too large. Please select a video under 25MB (approx 15s).",
         );
         return;
       }
@@ -118,9 +132,22 @@ export const AnalysisPage: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      const result = await analyzeDanceVideo(videoFile);
-      setAnalysisResult(result);
-      setAnalysisState(AnalysisState.COMPLETED);
+      // Call backend API - will use admin-configured default model
+      const result = await uploadVideoForAnalysis(
+        videoFile,
+        undefined,
+        undefined,
+        userEmail,
+      );
+
+      if (result.success && result.data) {
+        // Backend returns the full analysis object, extract ml_response
+        const mlResponse = result.data.mlResponse;
+        setAnalysisResult(mlResponse);
+        setAnalysisState(AnalysisState.COMPLETED);
+      } else {
+        throw new Error(result.message || "Analysis failed");
+      }
     } catch (err: any) {
       console.error(err);
       setAnalysisState(AnalysisState.ERROR);
@@ -143,7 +170,9 @@ export const AnalysisPage: React.FC = () => {
             className="w-16 h-16 border-4 border-muted border-t-primary rounded-full mb-4"
           />
           <h3 className="text-xl font-bold text-foreground">{processStatus}</h3>
-          <p className="text-muted-foreground text-sm mt-2">Please do not close this tab.</p>
+          <p className="text-muted-foreground text-sm mt-2">
+            Please do not close this tab.
+          </p>
         </div>
       )}
 
@@ -170,7 +199,7 @@ export const AnalysisPage: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 className="text-xs text-muted-foreground px-2.5 py-1.5 bg-muted rounded-md max-w-[160px] sm:max-w-xs truncate font-medium border border-border"
               >
-                {videoFile ? videoFile.name : 'History Video'}
+                {videoFile ? videoFile.name : "History Video"}
               </motion.span>
             )}
 
@@ -183,8 +212,18 @@ export const AnalysisPage: React.FC = () => {
                 disabled={isProcessing}
                 className="px-3 py-2 text-xs sm:text-sm font-bold text-primary-foreground bg-green-600 border border-green-700 rounded-lg hover:bg-green-700 shadow-md flex items-center gap-1.5 touch-manipulation whitespace-nowrap"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
                 </svg>
                 Download
               </motion.button>
@@ -203,32 +242,43 @@ export const AnalysisPage: React.FC = () => {
               onClick={triggerUpload}
               className="px-3 py-2 text-xs sm:text-sm font-bold text-primary-foreground bg-primary border border-ring rounded-lg hover:bg-primary/90 shadow-md flex items-center gap-1.5 touch-manipulation whitespace-nowrap"
             >
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <svg
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
               </svg>
-              {videoFile || videoUrl ? 'Replace' : 'Upload'}
+              {videoFile || videoUrl ? "Replace" : "Upload"}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleAnalyze}
               disabled={
-                (!videoFile) || // Disable analyze if only viewing history URL (cant re-analyze without file)
+                !videoFile || // Disable analyze if only viewing history URL (cant re-analyze without file)
                 analysisState === AnalysisState.ANALYZING ||
                 analysisState === AnalysisState.COMPLETED
               }
-              className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all touch-manipulation whitespace-nowrap ${(!videoFile)
-                ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                : analysisState === AnalysisState.COMPLETED
-                  ? 'bg-secondary text-secondary-foreground shadow-md'
-                  : 'bg-accent text-accent-foreground hover:bg-accent/90 shadow-md'
-                }`}
+              className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all touch-manipulation whitespace-nowrap ${
+                !videoFile
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : analysisState === AnalysisState.COMPLETED
+                    ? "bg-secondary text-secondary-foreground shadow-md"
+                    : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-md"
+              }`}
             >
               {analysisState === AnalysisState.ANALYZING
-                ? 'Analyzing...'
+                ? "Analyzing..."
                 : analysisState === AnalysisState.COMPLETED
-                  ? 'Complete'
-                  : 'Analyze'}
+                  ? "Complete"
+                  : "Analyze"}
             </motion.button>
           </div>
         </div>
@@ -257,8 +307,6 @@ export const AnalysisPage: React.FC = () => {
               {errorMsg}
             </div>
           )}
-
-
         </div>
 
         {/* Right Sidebar - Timeline */}

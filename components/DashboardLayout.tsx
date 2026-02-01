@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { isAdmin } from "../lib/adminCheck";
 
 export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -10,15 +11,16 @@ export const DashboardLayout: React.FC = () => {
 
   const currentPage = location.pathname.split("/").pop() || "analysis";
 
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [adminStatus, setAdminStatus] = useState<boolean>(false);
+
   const navItems = [
     { id: "analysis", label: "Analysis" },
     { id: "history", label: "History" },
     { id: "profile", label: "Profile" },
-    { id: "settings", label: "Settings" },
-  ];
-
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    { id: "settings", label: "Settings", adminOnly: true },
+  ].filter((item) => !item.adminOnly || adminStatus);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -26,8 +28,10 @@ export const DashboardLayout: React.FC = () => {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
-        setUserEmail(session.user.email || "User");
+        const email = session.user.email || "User";
+        setUserEmail(email);
         setAvatarUrl(session.user.user_metadata.avatar_url || "User");
+        setAdminStatus(isAdmin(email));
       }
     };
     fetchUser();
@@ -35,7 +39,9 @@ export const DashboardLayout: React.FC = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user?.email || null);
+      const email = session?.user?.email || null;
+      setUserEmail(email);
+      setAdminStatus(isAdmin(email));
     });
 
     return () => subscription.unsubscribe();
@@ -140,7 +146,11 @@ export const DashboardLayout: React.FC = () => {
           >
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-md shrink-0">
               <span className="text-xs font-semibold text-primary-foreground">
-                <img src={avatarUrl} alt="Profile Picture" className="w-full h-full rounded-full" />
+                <img
+                  src={avatarUrl}
+                  alt="Profile Picture"
+                  className="w-full h-full rounded-full"
+                />
               </span>
             </div>
             <div className="flex-1 min-w-0">
