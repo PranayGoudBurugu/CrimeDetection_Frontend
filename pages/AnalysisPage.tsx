@@ -9,6 +9,7 @@ import { Timeline } from "../components/Timeline";
 
 import { generateAnnotatedVideo } from "../services/videoProcessor";
 
+
 export const AnalysisPage: React.FC = () => {
   const location = useLocation(); // Hook to access navigation state
   const [videoFile, setVideoFile] = useState<File | null>(null);
