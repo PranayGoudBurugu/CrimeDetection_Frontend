@@ -8,6 +8,7 @@ interface AdminSettings {
   hasApiKey: boolean;
   apiKeyPreview: string | null;
 }
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const SettingsPage: React.FC = () => {
   // Admin settings state
@@ -50,7 +51,7 @@ export const SettingsPage: React.FC = () => {
 
   const fetchAdminSettings = async () => {
     try {
-      const response = await fetch("http://localhost:5005/settings");
+      const response = await fetch(`${API_URL}/settings`);
       const data = await response.json();
       if (data.success) {
         setAdminSettings(data.data);
@@ -74,7 +75,7 @@ export const SettingsPage: React.FC = () => {
         updateData.gemini_api_key = newApiKey.trim();
       }
 
-      const response = await fetch("http://localhost:5005/settings", {
+      const response = await fetch(`${API_URL}/settings`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
