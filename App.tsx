@@ -7,35 +7,42 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
+import CreditsExhaustedPage from "./pages/CreditsExhaustedPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { DeploymentGuard } from "./components/DeploymentGuard";
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Landing Page Route */}
-        <Route path="/" element={<LandingPage />} />
+      <DeploymentGuard>
+        <Routes>
+          {/* Landing Page Route */}
+          <Route path="/" element={<LandingPage />} />
 
-        {/* Auth Page Route */}
-        <Route path="/auth" element={<AuthPage />} />
+          {/* Auth Page Route */}
+          <Route path="/auth" element={<AuthPage />} />
 
-        {/* Dashboard Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route
-              index
-              element={<Navigate to="/dashboard/analysis" replace />}
-            />
-            <Route path="analysis" element={<AnalysisPage />} />
-            <Route path="history" element={<HistoryPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="settings" element={<SettingsPage />} />
+          {/* Credits Exhausted Route */}
+          <Route path="/credits-exhausted" element={<CreditsExhaustedPage />} />
+
+          {/* Dashboard Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route
+                index
+                element={<Navigate to="/dashboard/analysis" replace />}
+              />
+              <Route path="analysis" element={<AnalysisPage />} />
+              <Route path="history" element={<HistoryPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Catch all route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </DeploymentGuard>
     </BrowserRouter>
   );
 };
