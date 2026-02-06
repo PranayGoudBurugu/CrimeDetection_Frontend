@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 // DEPLOYMENT CONFIGURATION
 // To renew the deployment and enable access, update the DEPLOYMENT_DATE below
 // Set it to a date in the future (e.g., 30 days from now)
-const DEPLOYMENT_DATE = new Date('2024-01-01T00:00:00Z'); // Set to PAST date to trigger "Credits Exhausted"
+const DEPLOYMENT_DATE = new Date('2027-01-01T00:00:00Z'); // Set to PAST date to trigger "Credits Exhausted"
 const DEPLOYMENT_VALIDITY_DAYS = 30; // Deployment valid for 30 days
 
 // Calculate expiration date
