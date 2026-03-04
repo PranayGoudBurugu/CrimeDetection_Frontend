@@ -1,25 +1,35 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { MudraAnalysis } from "../types";
+import { ThreatDetection } from "../types";
 
 interface VideoPlayerProps {
   videoFile: File | null;
-  videoUrl?: string | null;  // New prop
-  analysisSegments: MudraAnalysis[];
-  danceStyle?: string;
-  storyline?: string; // New prop for end card
+  videoUrl?: string | null;
+  analysisSegments: ThreatDetection[];
+  sceneType?: string;
+  incidentSummary?: string;
   currentTime: number;
   onTimeUpdate: (time: number) => void;
   onUploadClick: () => void;
   isAnalyzing: boolean;
 }
 
+const getSeverityColor = (severity: string): string => {
+  switch (severity?.toUpperCase()) {
+    case 'CRITICAL': return '#ef4444';
+    case 'HIGH': return '#f97316';
+    case 'MEDIUM': return '#eab308';
+    case 'LOW': return '#22c55e';
+    default: return '#22d3ee';
+  }
+};
+
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   videoFile,
   videoUrl: externalVideoUrl,
   analysisSegments,
-  danceStyle,
-  storyline,
+  sceneType,
+  incidentSummary,
   currentTime,
   onTimeUpdate,
   onUploadClick,
@@ -30,10 +40,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [captionUrl, setCaptionUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState<number>(0);
-  const [processedSegments, setProcessedSegments] = useState<MudraAnalysis[]>(
+  const [processedSegments, setProcessedSegments] = useState<ThreatDetection[]>(
     []
   );
-  const [showEndCard, setShowEndCard] = useState(false); // State for end card
+  const [showEndCard, setShowEndCard] = useState(false);
 
   // Sync video URL when file changes or external URL provided
   useEffect(() => {
@@ -54,7 +64,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Handle video end
   const handleVideoEnded = () => {
-    if (storyline) {
+    if (incidentSummary) {
       setShowEndCard(true);
     }
   };
@@ -70,27 +80,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Process Segments for Continuity (Fill Gaps)
   useEffect(() => {
     if (analysisSegments.length > 0) {
-      // 1. Sort segments by start time
       const sorted = [...analysisSegments].sort(
         (a, b) => a.startTime - b.startTime
       );
-      const filled: MudraAnalysis[] = [];
+      const filled: ThreatDetection[] = [];
 
       for (let i = 0; i < sorted.length; i++) {
         const current = { ...sorted[i] };
         const next = sorted[i + 1];
 
-        // 2. Extend current segment to meet the next segment if there's a gap
         if (next) {
           if (current.endTime < next.startTime) {
             current.endTime = next.startTime;
           }
-          // If overlaps (rare due to AI logic, but safe to fix), clamp it
           if (current.endTime > next.startTime) {
             current.endTime = next.startTime;
           }
         } else {
-          // 3. Last segment: extend to video duration if known
           if (duration > 0 && current.endTime < duration) {
             current.endTime = duration;
           }
@@ -120,7 +126,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Ensure captions are enabled by default when track loads
   useEffect(() => {
     if (trackRef.current && videoRef.current) {
-      // Small timeout to ensure the track is registered
       setTimeout(() => {
         if (videoRef.current && videoRef.current.textTracks[0]) {
           videoRef.current.textTracks[0].mode = "showing";
@@ -129,7 +134,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   }, [captionUrl]);
 
-  // Refresh captions when seeking or replaying to force cue updates
+  // Refresh captions when seeking or replaying
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -178,7 +183,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
     if (videoRef.current && videoRef.current.textTracks) {
       for (let i = 0; i < videoRef.current.textTracks.length; i++) {
-        videoRef.current.textTracks[i].mode = "disabled"; // captions OFF by default
+        videoRef.current.textTracks[i].mode = "disabled";
       }
     }
   };
@@ -191,7 +196,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
 
-  // Determine active segment for custom overlay using processed data
+  // Determine active segment
   const activeSegment = processedSegments.find(
     (s) => currentTime >= s.startTime && currentTime <= s.endTime
   );
@@ -227,10 +232,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </svg>
             </motion.div>
             <h2 className="text-base font-medium text-foreground mb-2">
-              Upload Video
+              Upload CCTV Footage
             </h2>
             <p className="text-muted-foreground text-sm max-w-xs mx-auto font-medium">
-              Select a classical dance video for analysis
+              Upload surveillance footage for threat analysis
             </p>
           </motion.div>
         </div>
@@ -252,7 +257,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               {captionUrl && (
                 <track
                   ref={trackRef}
-                  label="Nritya Analysis"
+                  label="Threat Detection"
                   kind="metadata"
                   srcLang="en"
                   src={captionUrl}
@@ -274,13 +279,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   className="w-12 h-12 border-4 border-muted border-t-primary rounded-full"
                 />
                 <p className="text-primary mt-3 text-sm font-bold">
-                  Analyzing...
+                  Scanning for threats...
                 </p>
               </motion.div>
             )}
 
-            {/* Storyline End Card */}
-            {showEndCard && storyline && (
+            {/* Incident Summary End Card */}
+            {showEndCard && incidentSummary && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -288,10 +293,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 z-20 text-center"
               >
                 <h3 className="text-xl font-display font-bold text-white mb-4">
-                  Storyline Generated
+                  Incident Summary
                 </h3>
                 <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-2xl italic mb-6">
-                  "{storyline}"
+                  "{incidentSummary}"
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -319,20 +324,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
                   <span className="text-xs font-bold text-primary">
-                    {danceStyle || "Detected"}
+                    {sceneType || "Surveillance"}
                   </span>
                   <span className="w-1 h-1 rounded-full bg-secondary"></span>
-                  <span className="text-xs font-bold text-accent">
-                    {activeSegment.expression}
+                  <span
+                    className="text-xs font-bold uppercase"
+                    style={{ color: getSeverityColor(activeSegment.severity) }}
+                  >
+                    {activeSegment.severity} SEVERITY
                   </span>
                 </div>
 
                 <h3 className="text-sm sm:text-base font-display text-primary font-bold mb-1 text-center">
-                  {activeSegment.mudraName}
+                  ⚠ {activeSegment.threatType}
                 </h3>
 
-                <p className="text-xs text-secondary font-bold text-center mb-2">
-                  Meaning: {activeSegment.meaning}
+                <p className="text-xs font-bold text-center mb-2" style={{ color: getSeverityColor(activeSegment.severity) }}>
+                  Category: {activeSegment.alertCategory}
                 </p>
 
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed text-center font-medium">
@@ -348,7 +356,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 };
 
 // Helper function to generate WebVTT content
-const generateWebVTT = (segments: MudraAnalysis[]): string => {
+const generateWebVTT = (segments: ThreatDetection[]): string => {
   const pad = (n: number, width = 2) => n.toString().padStart(width, "0");
   const padMs = (n: number) => n.toString().padStart(3, "0");
 
@@ -365,7 +373,7 @@ const generateWebVTT = (segments: MudraAnalysis[]): string => {
   segments.forEach((seg, idx) => {
     vtt += `${idx + 1}\n`;
     vtt += `${formatTime(seg.startTime)} --> ${formatTime(seg.endTime)}\n`;
-    vtt += `<v Mudra>${seg.mudraName}</v>: ${seg.description} [${seg.expression}]\n\n`;
+    vtt += `<v Threat>⚠ ${seg.threatType}</v>: ${seg.description} [${seg.severity}]\n\n`;
   });
 
   return vtt;

@@ -1,12 +1,32 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MudraAnalysis } from '../types';
+import { ThreatDetection } from '../types';
 
 interface TimelineProps {
-  segments: MudraAnalysis[];
+  segments: ThreatDetection[];
   currentTime: number;
   onSeek: (time: number) => void;
 }
+
+const getSeverityColor = (severity: string): string => {
+  switch (severity?.toUpperCase()) {
+    case 'CRITICAL': return '#ef4444';
+    case 'HIGH': return '#f97316';
+    case 'MEDIUM': return '#eab308';
+    case 'LOW': return '#22c55e';
+    default: return '#22d3ee';
+  }
+};
+
+const getSeverityBg = (severity: string): string => {
+  switch (severity?.toUpperCase()) {
+    case 'CRITICAL': return 'bg-red-500/10 border-red-500/30 text-red-400';
+    case 'HIGH': return 'bg-orange-500/10 border-orange-500/30 text-orange-400';
+    case 'MEDIUM': return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400';
+    case 'LOW': return 'bg-green-500/10 border-green-500/30 text-green-400';
+    default: return 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400';
+  }
+};
 
 export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSeek }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -21,9 +41,6 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
   // Auto-scroll ONLY when active segment changes
   useEffect(() => {
     if (activeIndex !== -1 && containerRef.current) {
-      // Find the index-th child. Note: First child might be the "No data" div if empty, but activeIndex won't be -1 then.
-      // Actually, if segments.length > 0, the "No data" div is NOT rendered.
-      // So children[activeIndex] corresponds to the segment.
       const activeElement = containerRef.current.children[activeIndex] as HTMLElement;
       if (activeElement) {
         activeElement.scrollIntoView({
@@ -33,6 +50,7 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
       }
     }
   }, [activeIndex]);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <motion.div
@@ -42,10 +60,10 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
         className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b border-border"
       >
         <h3 className="text-base sm:text-lg font-bold text-primary">
-          Analysis Timeline
+          Threat Detection Timeline
         </h3>
         <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
-          Detected gestures and expressions
+          Detected threats and alerts
         </p>
       </motion.div>
 
@@ -57,7 +75,7 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
             transition={{ delay: 0.2 }}
             className="text-center text-muted-foreground py-12"
           >
-            <p className="text-sm font-bold">No analysis data yet</p>
+            <p className="text-sm font-bold">No threats detected yet</p>
           </motion.div>
         )}
 
@@ -80,7 +98,7 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
             >
               <div className="flex items-start justify-between mb-2">
                 <h4 className={`font-bold text-base ${isActive ? 'text-primary-foreground' : 'text-primary'}`}>
-                  {segment.mudraName}
+                  ⚠ {segment.threatType}
                 </h4>
                 <span className={`text-xs font-bold ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                   {segment.startTime.toFixed(1)}s
@@ -89,7 +107,7 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
 
               <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${isActive ? 'text-primary-foreground/80' : 'text-secondary'
                 }`}>
-                {segment.expression}
+                {segment.alertCategory}
               </div>
 
               <p className={`text-sm leading-relaxed ${isActive ? 'text-primary-foreground/90' : 'text-foreground'}`}>
@@ -97,9 +115,11 @@ export const Timeline: React.FC<TimelineProps> = ({ segments, currentTime, onSee
               </p>
 
               <div className="mt-3">
-                <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+                <span className={`inline-block px-2 py-1 rounded text-xs font-bold border ${isActive
+                    ? 'bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30'
+                    : getSeverityBg(segment.severity)
                   }`}>
-                  {segment.meaning}
+                  {segment.severity} SEVERITY
                 </span>
               </div>
             </motion.div>

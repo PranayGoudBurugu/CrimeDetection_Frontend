@@ -7,14 +7,14 @@ import {
   FileText,
   Play,
   ChevronRight,
-  Sparkles,
-  Eye,
-  Music,
-  Footprints,
+  Shield,
+  AlertTriangle,
+  Video,
+  Users,
 } from "lucide-react";
-import heroDancer from "@/assets/hero-dancer.jpg";
-import mudraHands from "@/assets/mudra-hands.jpg";
-import danceFeet from "@/assets/dance-feet.jpg";
+import heroSurveillance from "@/assets/hero-surveillance.png";
+import crowdDetection from "@/assets/crowd-detection.png";
+import weaponAlert from "@/assets/weapon-alert.png";
 import { supabase } from "../lib/supabase";
 
 const LandingPage = () => {
@@ -52,27 +52,27 @@ const LandingPage = () => {
   const features = [
     {
       icon: Upload,
-      title: "Upload Your Performance",
+      title: "Upload CCTV Footage",
       description:
-        "Simply upload your Bharatanatyam dance video in any format. Our AI processes high-quality footage seamlessly.",
+        "Upload surveillance video from any camera system. Our AI processes footage in real-time for immediate threat assessment.",
     },
     {
       icon: ScanSearch,
-      title: "AI-Powered Analysis",
+      title: "AI Threat Detection",
       description:
-        "Advanced computer vision identifies each adavu, mudra, and expression with precision timing.",
+        "Advanced computer vision detects crowds, sharp objects, weapons, and physical altercations with precise timestamps.",
     },
     {
       icon: BarChart3,
-      title: "Timeline Breakdown",
+      title: "Alert Timeline",
       description:
-        "Get a complete timeline showing every step name, position, and transition throughout your performance.",
+        "Get a complete timeline of detected threats with severity levels — from low-risk crowd gathering to critical weapon detection.",
     },
     {
       icon: FileText,
-      title: "Detailed Report",
+      title: "Incident Report",
       description:
-        "Receive comprehensive feedback on technique, rhythm accuracy, and areas for improvement.",
+        "Receive comprehensive incident summaries with threat classifications, enabling rapid response and evidence documentation.",
     },
   ];
 
@@ -80,26 +80,26 @@ const LandingPage = () => {
     {
       number: "01",
       title: "Upload",
-      desc: "Share your dance video",
+      desc: "Submit CCTV footage",
       icon: Upload,
     },
     {
       number: "02",
-      title: "Process",
-      desc: "AI analyzes every frame",
+      title: "Scan",
+      desc: "AI scans every frame",
       icon: ScanSearch,
     },
     {
       number: "03",
-      title: "Review",
-      desc: "Get detailed step names",
-      icon: Eye,
+      title: "Detect",
+      desc: "Identify threats & alerts",
+      icon: AlertTriangle,
     },
     {
       number: "04",
-      title: "Improve",
-      desc: "Learn from insights",
-      icon: Sparkles,
+      title: "Alert",
+      desc: "Get incident reports",
+      icon: Shield,
     },
   ];
 
@@ -142,7 +142,7 @@ const LandingPage = () => {
           style={{
             background:
               "radial-gradient(circle, var(--primary) 0%, transparent 70%)",
-            opacity: 0.15,
+            opacity: 0.1,
             transform: `translate(${scrollY * 0.05}px, ${scrollY * 0.1}px)`,
           }}
         />
@@ -151,7 +151,7 @@ const LandingPage = () => {
           style={{
             background:
               "radial-gradient(circle, var(--secondary) 0%, transparent 70%)",
-            opacity: 0.15,
+            opacity: 0.1,
             transform: `translate(${-scrollY * 0.03}px, ${scrollY * 0.08}px)`,
             animationDelay: "2s",
           }}
@@ -161,7 +161,7 @@ const LandingPage = () => {
           style={{
             background:
               "radial-gradient(circle, var(--accent) 0%, transparent 70%)",
-            opacity: 0.1,
+            opacity: 0.08,
             transform: `translateY(${-scrollY * 0.05}px)`,
             animationDelay: "4s",
           }}
@@ -180,41 +180,34 @@ const LandingPage = () => {
 
       {/* Navigation */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
-          scrollY > 50
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${scrollY > 50
             ? "bg-background/80 backdrop-blur-2xl border-b border-border"
             : ""
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex items-center justify-between">
           <div
-            className={`flex items-center gap-3 transition-all duration-1000 cursor-pointer ${
-              isVisible
+            className={`flex items-center gap-3 transition-all duration-1000 cursor-pointer ${isVisible
                 ? "opacity-100 translate-x-0"
                 : "opacity-0 -translate-x-10"
-            }`}
+              }`}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <div className="relative w-16 h-16 rounded-2xl overflow-hidden group bg-muted p-2">
-              <img
-                src="/nav_logo.png"
-                alt="Nritya AI Logo"
-                className="w-full h-full object-contain"
-                style={{ imageRendering: "crisp-edges" }}
-              />
+            <div className="relative w-12 h-12 rounded-xl overflow-hidden group bg-primary/10 border border-primary/30 flex items-center justify-center">
+              <Shield className="w-7 h-7 text-primary" />
             </div>
             <span className="text-2xl font-bold tracking-tight">
-              <span className="text-foreground">NRITYA</span>
-              <span className="text-primary ml-1">AI</span>
+              <span className="text-foreground">CRIME</span>
+              <span className="text-primary ml-1">WATCH</span>
+              <span className="text-accent ml-1 text-sm font-medium">AI</span>
             </span>
           </div>
 
           <div
-            className={`hidden md:flex items-center gap-10 transition-all duration-1000 delay-200 ${
-              isVisible
+            className={`hidden md:flex items-center gap-10 transition-all duration-1000 delay-200 ${isVisible
                 ? "opacity-100 translate-x-0"
                 : "opacity-0 translate-x-10"
-            }`}
+              }`}
           >
             <a
               href="#features"
@@ -258,59 +251,55 @@ const LandingPage = () => {
             <div className="flex flex-col justify-center text-center lg:text-left z-10">
               {/* Badge */}
               <div
-                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-muted border border-border mb-8 transition-all duration-1000 self-center lg:self-start ${
-                  isVisible
+                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-muted border border-border mb-8 transition-all duration-1000 self-center lg:self-start ${isVisible
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-6"
-                }`}
+                  }`}
               >
-                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                <Shield className="w-4 h-4 text-primary animate-pulse" />
                 <span className="text-sm text-muted-foreground">
-                  AI-Powered Dance Analysis
+                  AI-Powered Crime Detection
                 </span>
               </div>
 
               {/* Heading */}
               <h1
-                className={`text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-8 transition-all duration-1000 delay-150 ${
-                  isVisible
+                className={`text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-8 transition-all duration-1000 delay-150 ${isVisible
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-8"
-                }`}
+                  }`}
               >
-                <span className="block text-foreground">Master Your</span>
-                <span className="block mt-2 text-primary">Bharatanatyam</span>
+                <span className="block text-foreground">Intelligent</span>
+                <span className="block mt-2 text-primary">Crime Detection</span>
               </h1>
 
               {/* Description */}
               <p
-                className={`text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-12 leading-relaxed transition-all duration-1000 delay-300 ${
-                  isVisible
+                className={`text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-12 leading-relaxed transition-all duration-1000 delay-300 ${isVisible
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-8"
-                }`}
+                  }`}
               >
-                Upload your dance video and let our AI identify every{" "}
-                <span className="text-primary font-medium">adavu</span>,{" "}
-                <span className="text-secondary font-medium">mudra</span>, and{" "}
-                <span className="text-accent font-medium">abhinaya</span> — with
-                precise timestamps and detailed analysis.
+                Upload your CCTV footage and let our AI detect{" "}
+                <span className="text-primary font-medium">crowd threats</span>,{" "}
+                <span className="text-secondary font-medium">sharp objects</span>, and{" "}
+                <span className="text-accent font-medium">violent activity</span> — with
+                precise timestamps and severity alerts.
               </p>
 
               {/* CTA Buttons */}
               <div
-                className={`flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center transition-all duration-1000 delay-500 ${
-                  isVisible
+                className={`flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center transition-all duration-1000 delay-500 ${isVisible
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-8"
-                }`}
+                  }`}
               >
                 <button
                   onClick={handleAnalyze}
                   className="group relative px-8 py-4 rounded-full font-semibold text-base overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg transition-all duration-500"
                 >
                   <span className="relative flex items-center gap-2.5">
-                    Analyze Your Dance
+                    Analyze Footage
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </button>
@@ -323,32 +312,39 @@ const LandingPage = () => {
 
             {/* Right - Hero Image */}
             <div
-              className={`flex items-center justify-center lg:justify-end transition-all duration-1000 delay-500 ${
-                isVisible
+              className={`flex items-center justify-center lg:justify-end transition-all duration-1000 delay-500 ${isVisible
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 translate-x-10"
-              }`}
+                }`}
             >
               <div className="relative w-full max-w-sm lg:max-w-md my-16">
                 {/* Glow effect behind image */}
-                <div className="absolute inset-0 bg-primary/30 rounded-3xl blur-3xl scale-90" />
+                <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-3xl scale-90" />
 
                 {/* Main image */}
                 <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-border shadow-2xl">
                   <img
-                    src={heroDancer}
-                    alt="Bharatanatyam dancer in traditional pose"
+                    src={heroSurveillance}
+                    alt="CCTV surveillance monitoring center"
                     className="w-full h-full object-cover"
                   />
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
+
+                  {/* Scan line effect */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div
+                      className="w-full h-[2px] bg-primary/40 animate-scanline"
+                      style={{ boxShadow: '0 0 15px var(--primary), 0 0 30px var(--primary)' }}
+                    />
+                  </div>
                 </div>
 
                 {/* Floating accent images */}
                 <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-2xl overflow-hidden border border-border shadow-xl animate-float-slow backdrop-blur-sm">
                   <img
-                    src={danceFeet}
-                    alt="Dance feet"
+                    src={crowdDetection}
+                    alt="Crowd detection"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -357,8 +353,8 @@ const LandingPage = () => {
                   style={{ animationDelay: "1s" }}
                 >
                   <img
-                    src={mudraHands}
-                    alt="Mudra hands"
+                    src={weaponAlert}
+                    alt="Weapon alert"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -366,7 +362,7 @@ const LandingPage = () => {
                 {/* Decorative elements */}
                 <div className="absolute top-1/2 -left-12 w-24 h-24 border border-primary/20 rounded-full animate-spin-slow" />
                 <div
-                  className="absolute top-1/4 -right-8 w-16 h-16 border border-secondary/20 rounded-full animate-spin-slow"
+                  className="absolute top-1/4 -right-8 w-16 h-16 border border-accent/20 rounded-full animate-spin-slow"
                   style={{ animationDirection: "reverse" }}
                 />
               </div>
@@ -375,16 +371,15 @@ const LandingPage = () => {
 
           {/* Stats - Bottom of hero */}
           <div
-            className={`mt-20 transition-all duration-1000 delay-700 ${
-              isVisible
+            className={`mt-20 transition-all duration-1000 delay-700 ${isVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-8"
-            }`}
+              }`}
           >
             <div className="grid grid-cols-3 gap-8 md:gap-16 pt-8 border-t border-border">
               {[
-                { value: "108+", label: "Adavus Recognized" },
-                { value: "24", label: "Mudra Types" },
+                { value: "1000+", label: "Threats Detected" },
+                { value: "3", label: "Threat Categories" },
                 { value: "99%", label: "Accuracy Rate" },
               ].map((stat, i) => (
                 <div key={i} className="text-center group">
@@ -441,11 +436,10 @@ const LandingPage = () => {
               Features
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Powerful Analysis
+              Powerful Threat Detection
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Our AI understands the nuances of Bharatanatyam like a seasoned
-              guru
+              Our AI monitors CCTV footage like an expert security analyst
             </p>
           </div>
 
@@ -455,32 +449,28 @@ const LandingPage = () => {
               return (
                 <div
                   key={i}
-                  className={`group relative p-8 rounded-2xl border transition-all duration-500 cursor-pointer ${
-                    activeFeature === i
+                  className={`group relative p-8 rounded-2xl border transition-all duration-500 cursor-pointer ${activeFeature === i
                       ? "bg-primary/10 border-primary/30"
                       : "bg-card border-border hover:border-primary/20 hover:bg-card/80"
-                  }`}
+                    }`}
                   onMouseEnter={() => setActiveFeature(i)}
                 >
                   <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-all duration-500 ${
-                      activeFeature === i
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-all duration-500 ${activeFeature === i
                         ? "bg-primary"
                         : "bg-muted group-hover:bg-accent"
-                    }`}
+                      }`}
                   >
                     <Icon
-                      className={`w-6 h-6 transition-colors duration-500 ${
-                        activeFeature === i
+                      className={`w-6 h-6 transition-colors duration-500 ${activeFeature === i
                           ? "text-primary-foreground"
                           : "text-muted-foreground group-hover:text-foreground"
-                      }`}
+                        }`}
                     />
                   </div>
                   <h3
-                    className={`text-lg font-semibold mb-3 transition-colors duration-300 ${
-                      activeFeature === i ? "text-primary" : "text-foreground"
-                    }`}
+                    className={`text-lg font-semibold mb-3 transition-colors duration-300 ${activeFeature === i ? "text-primary" : "text-foreground"
+                      }`}
                   >
                     {feature.title}
                   </h3>
@@ -490,9 +480,8 @@ const LandingPage = () => {
 
                   {/* Active indicator line */}
                   <div
-                    className={`absolute bottom-0 left-8 right-8 h-px transition-all duration-500 ${
-                      activeFeature === i ? "bg-primary" : "bg-transparent"
-                    }`}
+                    className={`absolute bottom-0 left-8 right-8 h-px transition-all duration-500 ${activeFeature === i ? "bg-primary" : "bg-transparent"
+                      }`}
                   />
                 </div>
               );
@@ -513,7 +502,7 @@ const LandingPage = () => {
               How It Works
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              From upload to insights in minutes
+              From footage upload to threat alerts in minutes
             </p>
           </div>
 
@@ -568,27 +557,27 @@ const LandingPage = () => {
                 About
               </p>
               <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
-                <span className="text-foreground">Preserving Tradition</span>
+                <span className="text-foreground">Securing Spaces</span>
                 <br />
-                <span className="text-primary">Through Technology</span>
+                <span className="text-primary">Through Intelligence</span>
               </h2>
               <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-                NRITYA AI combines the ancient wisdom of Bharatanatyam with
-                cutting-edge artificial intelligence. Our technology recognizes
-                the 108 karanas, various adavus, and subtle expressions that
-                make this art form so profound.
+                CrimeWatch AI combines cutting-edge artificial intelligence with
+                surveillance technology to provide real-time threat detection.
+                Our system analyzes CCTV footage to identify crowd anomalies,
+                weapon threats, and violent incidents before they escalate.
               </p>
               <p className="text-muted-foreground text-lg leading-relaxed mb-10">
-                Whether you're a student perfecting your aramandi or a guru
-                analyzing performances, NRITYA AI provides the insights you need
-                to elevate your art.
+                Whether you're securing a public space, monitoring a facility,
+                or providing law enforcement support, CrimeWatch AI delivers
+                the intelligence you need for rapid response.
               </p>
               <div className="flex flex-wrap gap-3">
                 {[
-                  { label: "Adavu Detection", icon: Footprints },
-                  { label: "Mudra Recognition", icon: Eye },
-                  { label: "Expression Analysis", icon: ScanSearch },
-                  { label: "Rhythm Tracking", icon: Music },
+                  { label: "Crowd Detection", icon: Users },
+                  { label: "Weapon Scanning", icon: AlertTriangle },
+                  { label: "Violence Detection", icon: ScanSearch },
+                  { label: "Real-Time Alerts", icon: Shield },
                 ].map((tag, i) => (
                   <span
                     key={i}
@@ -607,35 +596,35 @@ const LandingPage = () => {
                 <div className="space-y-4">
                   <div className="aspect-[3/4] rounded-2xl overflow-hidden border border-border shadow-xl transform hover:scale-105 transition-transform duration-500">
                     <img
-                      src={mudraHands}
-                      alt="Mudra hands gesture"
+                      src={crowdDetection}
+                      alt="AI crowd detection analysis"
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="aspect-square rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-primary">108</div>
+                      <div className="text-4xl font-bold text-primary">24/7</div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Karanas
+                        Monitoring
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-4 pt-8">
-                  <div className="aspect-square rounded-2xl bg-secondary/10 border border-secondary/30 flex items-center justify-center">
+                  <div className="aspect-square rounded-2xl bg-accent/10 border border-accent/30 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-secondary">
-                        2000+
+                      <div className="text-4xl font-bold text-accent">
+                        &lt;2s
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Years of Heritage
+                        Detection Speed
                       </p>
                     </div>
                   </div>
                   <div className="aspect-[3/4] rounded-2xl overflow-hidden border border-border shadow-xl transform hover:scale-105 transition-transform duration-500">
                     <img
-                      src={danceFeet}
-                      alt="Dance feet with ghungroo"
+                      src={weaponAlert}
+                      alt="AI weapon detection alert"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -662,20 +651,20 @@ const LandingPage = () => {
             <div className="relative z-10 text-center">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
                 <span className="text-foreground">Ready to </span>
-                <span className="text-primary">Transform</span>
+                <span className="text-primary">Secure</span>
                 <br />
-                <span className="text-foreground">Your Practice?</span>
+                <span className="text-foreground">Your Space?</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-12 max-w-xl mx-auto">
-                Join thousands of dancers and gurus using AI to perfect the
-                timeless art of Bharatanatyam
+                Join security teams worldwide using AI to detect and prevent
+                crime in real-time
               </p>
               <button
                 onClick={handleAnalyze}
                 className="group relative px-10 py-5 rounded-full font-semibold text-lg overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl transition-all duration-500"
               >
                 <span className="relative flex items-center gap-3">
-                  Start Analyzing Now
+                  Start Monitoring Now
                   <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </button>
@@ -689,17 +678,13 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted p-2">
-                <img
-                  src="/nav_logo.png"
-                  alt="Nritya AI Logo"
-                  className="w-full h-full object-contain"
-                  style={{ imageRendering: "crisp-edges" }}
-                />
+              <div className="w-10 h-10 rounded-xl overflow-hidden bg-primary/10 border border-primary/30 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-primary" />
               </div>
               <span className="text-lg font-semibold">
-                <span className="text-foreground">NRITYA</span>
-                <span className="text-primary ml-1">AI</span>
+                <span className="text-foreground">CRIME</span>
+                <span className="text-primary ml-1">WATCH</span>
+                <span className="text-accent ml-1 text-sm">AI</span>
               </span>
             </div>
             <div className="flex items-center gap-8 text-sm text-muted-foreground">
@@ -723,7 +708,7 @@ const LandingPage = () => {
               </a>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2026 NRITYA AI. Celebrating the art of Bharatanatyam.
+              © 2026 CrimeWatch AI. Securing spaces with intelligence.
             </p>
           </div>
         </div>

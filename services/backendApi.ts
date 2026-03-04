@@ -23,6 +23,8 @@ export const uploadVideoForAnalysis = async (
   modelType?: "gemini" | "local",
   customPrompt?: string,
   userEmail?: string | null,
+  location?: string,
+  alertPhone?: string,
 ) => {
   const formData = new FormData();
   formData.append("video", videoFile);
@@ -37,6 +39,14 @@ export const uploadVideoForAnalysis = async (
 
   if (userEmail) {
     formData.append("userEmail", userEmail);
+  }
+
+  if (location) {
+    formData.append("location", location);
+  }
+
+  if (alertPhone) {
+    formData.append("alertPhone", alertPhone);
   }
 
   const response = await fetch(`${API_URL}/getanalysis`, {

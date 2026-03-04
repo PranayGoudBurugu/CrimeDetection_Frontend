@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { isAdmin } from "../lib/adminCheck";
+import { Shield, AlertTriangle } from "lucide-react";
 
 export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export const DashboardLayout: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [adminStatus, setAdminStatus] = useState<boolean>(false);
+  const [missingPhone, setMissingPhone] = useState<boolean>(false);
 
   const navItems = [
     { id: "analysis", label: "Analysis" },
@@ -30,8 +32,15 @@ export const DashboardLayout: React.FC = () => {
       if (session?.user) {
         const email = session.user.email || "User";
         setUserEmail(email);
-        setAvatarUrl(session.user.user_metadata.avatar_url || "User");
+        setAvatarUrl(session.user.user_metadata?.avatar_url || "User");
         setAdminStatus(isAdmin(email));
+
+        // Check if user has a phone number saved for SMS alerts
+        if (!session.user.user_metadata?.alertPhone) {
+          setMissingPhone(true);
+        } else {
+          setMissingPhone(false);
+        }
       }
     };
     fetchUser();
@@ -42,6 +51,12 @@ export const DashboardLayout: React.FC = () => {
       const email = session?.user?.email || null;
       setUserEmail(email);
       setAdminStatus(isAdmin(email));
+
+      if (session?.user && !session.user.user_metadata?.alertPhone) {
+        setMissingPhone(true);
+      } else {
+        setMissingPhone(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -106,9 +121,11 @@ export const DashboardLayout: React.FC = () => {
           className="h-14 px-4 flex items-center gap-3 border-b border-sidebar-border mt-1 cursor-pointer"
           onClick={() => navigate("/")}
         >
-          <img src="/nav_logo.png" alt="Nritya AI Logo" className="w-12 h-12" />
-          <h1 className="text-2xl font-display font-medium text-primary tracking-tight mt-1">
-            Nritya AI
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+            <Shield className="w-6 h-6 text-primary" />
+          </div>
+          <h1 className="text-xl font-display font-medium text-primary tracking-tight mt-1">
+            CrimeWatch AI
           </h1>
         </motion.div>
 
@@ -124,11 +141,10 @@ export const DashboardLayout: React.FC = () => {
                 whileHover={{ scale: 1.02, x: 4 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleNavigate(item.id)}
-                className={`w-full px-3 py-2 text-left text-sm font-medium rounded-md transition-colors ${
-                  currentPage === item.id
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                }`}
+                className={`w-full px-3 py-2 text-left text-sm font-medium rounded-md transition-colors ${currentPage === item.id
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  }`}
               >
                 {item.label}
               </motion.button>
@@ -207,13 +223,11 @@ export const DashboardLayout: React.FC = () => {
             >
               {/* Logo */}
               <div className="h-16 px-4 flex items-center gap-3 border-b border-sidebar-border mt-1">
-                <img
-                  src="/nav_logo.png"
-                  alt="Nritya AI Logo"
-                  className="w-10 h-10"
-                />
+                <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-primary" />
+                </div>
                 <h1 className="text-xl font-display font-medium text-primary tracking-tight mt-1">
-                  Nritya AI
+                  CrimeWatch AI
                 </h1>
               </div>
 
@@ -224,11 +238,10 @@ export const DashboardLayout: React.FC = () => {
                     <button
                       key={item.id}
                       onClick={() => handleNavigate(item.id)}
-                      className={`w-full px-4 py-3 text-left text-sm font-medium rounded-lg transition-colors touch-manipulation ${
-                        currentPage === item.id
-                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      }`}
+                      className={`w-full px-4 py-3 text-left text-sm font-medium rounded-lg transition-colors touch-manipulation ${currentPage === item.id
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        }`}
                     >
                       {item.label}
                     </button>
@@ -283,8 +296,32 @@ export const DashboardLayout: React.FC = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-background">
-        <Outlet />
+      <main className="flex-1 overflow-auto bg-background flex flex-col">
+        {missingPhone && currentPage !== "settings" && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-primary/10 border-b border-primary/20 px-4 py-3 flex items-center justify-between shadow-sm shrink-0"
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/20 p-1.5 rounded-md text-primary">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-medium text-foreground">
+                <span className="font-bold">Missing SMS Alert Phone Number:</span> Add your phone number to receive instant SMS alerts when violence or weapons are detected.
+              </p>
+            </div>
+            <button
+              onClick={() => handleNavigate("settings")}
+              className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors shrink-0 ml-4"
+            >
+              Add Number
+            </button>
+          </motion.div>
+        )}
+        <div className="flex-1 relative">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

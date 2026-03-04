@@ -23,23 +23,37 @@ export const SettingsPage: React.FC = () => {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  // Personal settings state
+  const [alertPhone, setAlertPhone] = useState("");
+  const [loadingPersonal, setLoadingPersonal] = useState(false);
+  const [personalMessage, setPersonalMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Fetch user session and check admin status
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    const checkUserStatus = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user?.email) {
         setUserEmail(session.user.email);
         setIsUserAdmin(isAdmin(session.user.email));
+
+        // Load personal settings from metadata
+        if (session.user.user_metadata?.alertPhone) {
+          setAlertPhone(session.user.user_metadata.alertPhone);
+        }
       }
       setLoading(false);
     };
-    checkAdminStatus();
+    checkUserStatus();
   }, []);
 
   // Fetch admin settings on mount (only if admin)
@@ -108,53 +122,35 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const handlePersonalSave = async () => {
+    setLoadingPersonal(true);
+    setPersonalMessage(null);
+
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: { alertPhone: alertPhone.trim() }
+      });
+
+      if (error) throw error;
+
+      setPersonalMessage({
+        type: "success",
+        text: "Phone number updated successfully!",
+      });
+    } catch (error: any) {
+      setPersonalMessage({
+        type: "error",
+        text: error.message || "Failed to update phone number.",
+      });
+    } finally {
+      setLoadingPersonal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-full bg-background flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isUserAdmin) {
-    return (
-      <div className="min-h-full bg-background flex flex-col items-center justify-center p-8 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-card p-8 rounded-2xl border-2 border-border shadow-xl max-w-md w-full"
-        >
-          <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m0-8V7m0 0a2 2 0 100-4 2 2 0 000 4zm-8 8a8 8 0 1116 0 8 8 0 01-16 0z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            Access Denied
-          </h2>
-          <p className="text-muted-foreground mb-6 font-medium">
-            You do not have permission to access the admin settings. Please
-            contact an administrator if you believe this is an error.
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => window.history.back()}
-            className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl shadow-lg hover:bg-primary/90 transition-all"
-          >
-            Go Back
-          </motion.button>
-        </motion.div>
       </div>
     );
   }
@@ -178,7 +174,67 @@ export const SettingsPage: React.FC = () => {
 
       {/* Content */}
       <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
-        <div className="space-y-6">
+        <div className="space-y-8">
+
+          {/* Personal Settings - Visible to all users */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="bg-card rounded-xl border border-border p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-foreground">
+                Personal Settings
+              </h3>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-foreground mb-2">
+                  SMS Alert Phone Number
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="tel"
+                    placeholder="e.g. +1234567890"
+                    value={alertPhone}
+                    onChange={(e) => setAlertPhone(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter your phone number with country code (e.g. +91...) to receive instant SMS alerts when violence or weapons are detected.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handlePersonalSave}
+                  disabled={loadingPersonal}
+                  className="w-full px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loadingPersonal ? "Saving..." : "Save Phone Number"}
+                </motion.button>
+
+                {personalMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`mt-3 px-4 py-2 rounded-lg text-sm font-medium ${personalMessage.type === "success"
+                        ? "bg-green-100 text-green-800 border border-green-200"
+                        : "bg-red-100 text-red-800 border border-red-200"
+                      }`}
+                  >
+                    {personalMessage.text}
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
           {/* Admin Settings - Model & API Key - Only visible to admins */}
           {isUserAdmin && (
             <motion.div
@@ -212,11 +268,10 @@ export const SettingsPage: React.FC = () => {
                           default_model: "gemini",
                         })
                       }
-                      className={`px-4 py-4 text-sm font-bold rounded-lg border-2 transition-all ${
-                        adminSettings.default_model === "gemini"
+                      className={`px-4 py-4 text-sm font-bold rounded-lg border-2 transition-all ${adminSettings.default_model === "gemini"
                           ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30"
                           : "bg-card text-foreground border-border hover:border-primary/50"
-                      }`}
+                        }`}
                     >
                       <div className="flex flex-col items-center gap-1">
                         <span>Gemini AI</span>
@@ -232,11 +287,10 @@ export const SettingsPage: React.FC = () => {
                           default_model: "local",
                         })
                       }
-                      className={`px-4 py-4 text-sm font-bold rounded-lg border-2 transition-all ${
-                        adminSettings.default_model === "local"
+                      className={`px-4 py-4 text-sm font-bold rounded-lg border-2 transition-all ${adminSettings.default_model === "local"
                           ? "bg-secondary text-secondary-foreground border-secondary shadow-lg shadow-secondary/30"
                           : "bg-card text-foreground border-border hover:border-secondary/50"
-                      }`}
+                        }`}
                     >
                       <div className="flex flex-col items-center gap-1">
                         <span>Local Model</span>
@@ -303,11 +357,10 @@ export const SettingsPage: React.FC = () => {
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`mt-3 px-4 py-2 rounded-lg text-sm font-medium ${
-                        adminMessage.type === "success"
+                      className={`mt-3 px-4 py-2 rounded-lg text-sm font-medium ${adminMessage.type === "success"
                           ? "bg-green-100 text-green-800 border border-green-200"
                           : "bg-red-100 text-red-800 border border-red-200"
-                      }`}
+                        }`}
                     >
                       {adminMessage.text}
                     </motion.div>

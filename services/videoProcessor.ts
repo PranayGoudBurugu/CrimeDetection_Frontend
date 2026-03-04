@@ -1,10 +1,20 @@
-import { MudraAnalysis } from '../types';
+import { ThreatDetection } from '../types';
 import * as Mp4Muxer from 'mp4-muxer';
+
+const getSeverityColor = (severity: string): string => {
+    switch (severity?.toUpperCase()) {
+        case 'CRITICAL': return '#ef4444';
+        case 'HIGH': return '#f97316';
+        case 'MEDIUM': return '#eab308';
+        case 'LOW': return '#22c55e';
+        default: return '#22d3ee';
+    }
+};
 
 export const generateAnnotatedVideo = async (
     videoFile: File,
-    segments: MudraAnalysis[],
-    storyline: string,
+    segments: ThreatDetection[],
+    incidentSummary: string,
     onProgress: (msg: string) => void
 ): Promise<{ blob: Blob, extension: string }> => {
     return new Promise(async (resolve, reject) => {
@@ -60,8 +70,6 @@ export const generateAnnotatedVideo = async (
             // 4. Playback Capture Loop
             onProgress('Processing frames (High Quality)...');
 
-            // Set optimized playback rate for smooth 24-30fps capture
-            // 2.5x speed on 60Hz screen ~= 24fps effective recording
             video.defaultPlaybackRate = 2.5;
             video.playbackRate = 2.5;
 
@@ -70,39 +78,47 @@ export const generateAnnotatedVideo = async (
             const process = async (now: number, metadata: any) => {
                 if (video.ended) return;
 
-                const currentTime = metadata.mediaTime; // Use precise media time
+                const currentTime = metadata.mediaTime;
 
                 // Draw Frame
                 ctx.drawImage(video, 0, 0, width, height);
 
-                // Draw Overlay
+                // Draw Threat Overlay
                 const activeSegment = segments.find(
                     s => currentTime >= s.startTime && currentTime < s.endTime
                 );
 
                 if (activeSegment) {
-                    const barHeight = height * 0.2;
+                    const barHeight = height * 0.22;
                     const barY = height - barHeight;
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
                     ctx.fillRect(0, barY, width, barHeight);
 
+                    // Severity indicator bar at top of overlay
+                    const severityColor = getSeverityColor(activeSegment.severity);
+                    ctx.fillStyle = severityColor;
+                    ctx.fillRect(0, barY, width, 3);
+
+                    // Threat type
                     ctx.fillStyle = '#ffffff';
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
-                    ctx.font = `bold ${Math.floor(height * 0.05)}px Arial`;
-                    ctx.fillText(activeSegment.mudraName, width * 0.05, barY + barHeight * 0.35);
+                    ctx.font = `bold ${Math.floor(height * 0.045)}px Arial`;
+                    ctx.fillText(`⚠ ${activeSegment.threatType}`, width * 0.05, barY + barHeight * 0.3);
 
-                    ctx.fillStyle = '#FFD700';
+                    // Alert category
+                    ctx.fillStyle = severityColor;
                     ctx.font = `bold ${Math.floor(height * 0.03)}px Arial`;
-                    ctx.fillText(activeSegment.expression.toUpperCase(), width * 0.05, barY + barHeight * 0.7);
+                    ctx.fillText(`[${activeSegment.alertCategory}]`, width * 0.05, barY + barHeight * 0.6);
 
-                    ctx.fillStyle = '#cccccc';
+                    // Severity badge
+                    ctx.fillStyle = severityColor;
                     ctx.textAlign = 'right';
-                    ctx.font = `italic ${Math.floor(height * 0.03)}px Arial`;
-                    ctx.fillText(activeSegment.meaning, width * 0.95, barY + barHeight * 0.5);
+                    ctx.font = `bold ${Math.floor(height * 0.035)}px Arial`;
+                    ctx.fillText(`${activeSegment.severity} SEVERITY`, width * 0.95, barY + barHeight * 0.45);
                 }
 
-                // Encode Frame using presentation timestamp
+                // Encode Frame
                 const bitmap = await createImageBitmap(canvas);
                 const frame = new VideoFrame(bitmap, { timestamp: currentTime * 1_000_000 });
                 videoEncoder.encode(frame, { keyFrame: frameCount % 60 === 0 });
@@ -116,7 +132,6 @@ export const generateAnnotatedVideo = async (
                 }
 
                 if (!video.ended && !video.paused) {
-                    // Request next frame
                     (video as any).requestVideoFrameCallback(process);
                 }
             };
@@ -128,7 +143,6 @@ export const generateAnnotatedVideo = async (
             // Wait for video end
             await new Promise<void>((resolve) => {
                 video.onended = () => resolve();
-                // Failsafe check
                 const check = setInterval(() => {
                     if (video.ended) {
                         clearInterval(check);
@@ -137,22 +151,22 @@ export const generateAnnotatedVideo = async (
                 }, 500);
             });
 
-            // 5. End Card
-            onProgress('Adding End Card...');
+            // 5. End Card - Incident Report
+            onProgress('Adding Incident Report...');
             const endCardDuration = 5;
             const endCardFrames = endCardDuration * 30;
 
-            ctx.fillStyle = '#111111';
+            ctx.fillStyle = '#080c14';
             ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#22d3ee';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.font = `bold ${Math.floor(height * 0.08)}px Arial`;
-            ctx.fillText('Analysis Conclusion', width / 2, height * 0.2);
-            ctx.fillStyle = '#cccccc';
+            ctx.fillText('Incident Report', width / 2, height * 0.2);
+            ctx.fillStyle = '#94a3b8';
             ctx.font = `${Math.floor(height * 0.035)}px Arial`;
 
-            const words = storyline.split(' ');
+            const words = incidentSummary.split(' ');
             let line = '';
             let y = height * 0.4;
             const maxWidth = width * 0.8;

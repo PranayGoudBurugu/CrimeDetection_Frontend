@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { uploadVideoForAnalysis } from "../services/backendApi";
 import { supabase } from "../lib/supabase";
 import { AnalysisState, AnalysisResponse } from "../types";
+import { ThreatDetection } from "../types";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { Timeline } from "../components/Timeline";
 
@@ -26,6 +27,9 @@ export const AnalysisPage: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [alertPhone, setAlertPhone] = useState<string | null>(null);
+  const [cameraLocation, setCameraLocation] = useState<string>("");
+  const [alertSent, setAlertSent] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,6 +41,9 @@ export const AnalysisPage: React.FC = () => {
       } = await supabase.auth.getSession();
       if (session?.user?.email) {
         setUserEmail(session.user.email);
+        if (session.user.user_metadata?.alertPhone) {
+          setAlertPhone(session.user.user_metadata.alertPhone);
+        }
       }
     };
     getUser();
@@ -86,7 +93,7 @@ export const AnalysisPage: React.FC = () => {
       const { blob, extension } = await generateAnnotatedVideo(
         fileToProcess,
         analysisResult.segments,
-        analysisResult.storyline || "Analysis Completed",
+        analysisResult.incidentSummary || "Analysis Completed",
         (msg) => setProcessStatus(msg),
       );
 
@@ -139,6 +146,8 @@ export const AnalysisPage: React.FC = () => {
         undefined,
         undefined,
         userEmail,
+        cameraLocation || undefined,
+        alertPhone || undefined,
       );
 
       if (result.success && result.data) {
@@ -146,6 +155,12 @@ export const AnalysisPage: React.FC = () => {
         const mlResponse = result.data.mlResponse;
         setAnalysisResult(mlResponse);
         setAnalysisState(AnalysisState.COMPLETED);
+
+        // Check if SMS alert was sent
+        if (result.alertSent) {
+          setAlertSent(true);
+          setTimeout(() => setAlertSent(false), 8000); // Auto-hide after 8s
+        }
       } else {
         throw new Error(result.message || "Analysis failed");
       }
@@ -162,6 +177,23 @@ export const AnalysisPage: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden relative">
+      {/* SMS Alert Toast */}
+      {alertSent && (
+        <motion.div
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -100, opacity: 0 }}
+          transition={{ type: "spring", damping: 15 }}
+          className="absolute top-4 left-1/2 -translate-x-1/2 z-[60] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-red-400"
+        >
+          <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+          <div>
+            <p className="font-bold text-sm">🚨 SMS Alert Sent!</p>
+            <p className="text-xs text-red-100">Violence detected — alert sent to security team</p>
+          </div>
+          <button onClick={() => setAlertSent(false)} className="ml-2 text-red-200 hover:text-white text-lg">✕</button>
+        </motion.div>
+      )}
       {/* Processing Overlay */}
       {isProcessing && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
@@ -187,13 +219,21 @@ export const AnalysisPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
           <div className="text-left">
             <h2 className="text-lg sm:text-xl lg:text-2xl font-display font-bold text-primary">
-              Video Analysis
+              CCTV Analysis
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 font-medium">
-              Upload and analyze classical dance performances
+              Upload surveillance footage for threat detection
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:shrink-0">
+            {/* Camera Location Input */}
+            <input
+              type="text"
+              value={cameraLocation}
+              onChange={(e) => setCameraLocation(e.target.value)}
+              placeholder="📍 Camera Location (e.g. Main Gate)"
+              className="px-3 py-2 text-xs sm:text-sm bg-muted border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-[200px] font-medium"
+            />
             {(videoFile || videoUrl) && (
               <motion.span
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -267,13 +307,12 @@ export const AnalysisPage: React.FC = () => {
                 analysisState === AnalysisState.ANALYZING ||
                 analysisState === AnalysisState.COMPLETED
               }
-              className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all touch-manipulation whitespace-nowrap ${
-                !videoFile
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : analysisState === AnalysisState.COMPLETED
-                    ? "bg-secondary text-secondary-foreground shadow-md"
-                    : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-md"
-              }`}
+              className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all touch-manipulation whitespace-nowrap ${!videoFile
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : analysisState === AnalysisState.COMPLETED
+                  ? "bg-secondary text-secondary-foreground shadow-md"
+                  : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-md"
+                }`}
             >
               {analysisState === AnalysisState.ANALYZING
                 ? "Analyzing..."
@@ -294,8 +333,8 @@ export const AnalysisPage: React.FC = () => {
               videoFile={videoFile}
               videoUrl={videoUrl} // Pass remote URL
               analysisSegments={analysisResult?.segments || []}
-              danceStyle={analysisResult?.danceStyle}
-              storyline={analysisResult?.storyline}
+              sceneType={analysisResult?.sceneType}
+              incidentSummary={analysisResult?.incidentSummary}
               currentTime={currentTime}
               onTimeUpdate={setCurrentTime}
               onUploadClick={triggerUpload}

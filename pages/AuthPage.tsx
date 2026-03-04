@@ -240,10 +240,10 @@ const AuthPage = () => {
             <Sparkles className="w-3 h-3" /> Secure Access
           </div>
           <h1 className="text-4xl font-bold text-foreground">
-            Welcome to Nritya AI
+            Welcome to CrimeWatch AI
           </h1>
           <p className="text-muted-foreground mt-3 uppercase tracking-tighter text-sm font-medium">
-            Continue your journey in dance analysis
+            Continue to your security monitoring dashboard
           </p>
         </div>
 

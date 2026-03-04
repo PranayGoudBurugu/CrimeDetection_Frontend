@@ -1,16 +1,16 @@
-export interface MudraAnalysis {
+export interface ThreatDetection {
   startTime: number;
   endTime: number;
-  mudraName: string;
-  meaning: string;
-  expression: string; // Abhinaya
+  threatType: string;
+  severity: string; // LOW, MEDIUM, HIGH, CRITICAL
+  alertCategory: string; // CROWD, WEAPON, VIOLENCE, SUSPICIOUS
   description: string;
 }
 
 export interface AnalysisResponse {
-  danceStyle?: string;
-  segments: MudraAnalysis[];
-  storyline?: string; // AI-generated narrative summary
+  sceneType?: string;
+  segments: ThreatDetection[];
+  incidentSummary?: string; // AI-generated incident narrative
 }
 
 export enum AnalysisState {

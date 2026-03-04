@@ -1,12 +1,12 @@
 import { AnalysisResponse } from "../types";
 
 /**
- * Service to interact with the Backend API for dance video analysis
+ * Service to interact with the Backend API for CCTV video analysis
  * The backend handles:
  * - Video upload
  * - Gemini AI analysis
  * - Video annotation (with FFmpeg)
- * - Storyline generation
+ * - Incident summary generation
  * - Database storage
  */
 
@@ -20,7 +20,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005';
  * @param customPrompt - Optional custom prompt for analysis
  * @returns Promise<AnalysisResponse> - The analysis result with segments and storyline
  */
-export const analyzeDanceVideo = async (
+export const analyzeCCTVFootage = async (
   file: File,
   customPrompt?: string
 ): Promise<AnalysisResponse> => {
@@ -61,9 +61,9 @@ export const analyzeDanceVideo = async (
 
     // Return in the format expected by the frontend
     return {
-      danceStyle: mlResponse.danceStyle,
+      sceneType: mlResponse.danceStyle || mlResponse.sceneType,
       segments: mlResponse.segments || [],
-      storyline: mlResponse.storyline || result.storyline, // Storyline from backend
+      incidentSummary: mlResponse.storyline || mlResponse.incidentSummary || result.storyline,
     };
 
   } catch (error: any) {
