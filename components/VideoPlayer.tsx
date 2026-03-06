@@ -202,9 +202,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   );
 
   return (
-    <div className="w-full h-full flex flex-col bg-background">
+    <div className="w-full h-full flex flex-col bg-black">
       {!videoUrl ? (
-        <div className="flex-1 flex items-center justify-center">
+        /* ─── Upload Placeholder ─── */
+        <div className="flex-1 flex items-center justify-center bg-background">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -215,141 +216,140 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               onClick={onUploadClick}
-              className="w-16 h-16 bg-primary hover:bg-primary/90 rounded-lg flex items-center justify-center mx-auto mb-4 cursor-pointer transition-all shadow-lg"
+              className="w-20 h-20 bg-primary hover:bg-primary/90 rounded-2xl flex items-center justify-center mx-auto mb-5 cursor-pointer transition-all shadow-lg"
             >
-              <svg
-                className="w-8 h-8 text-primary-foreground"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
+              <svg className="w-10 h-10 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
             </motion.div>
-            <h2 className="text-base font-medium text-foreground mb-2">
-              Upload CCTV Footage
-            </h2>
+            <h2 className="text-lg font-bold text-foreground mb-2">Upload CCTV Footage</h2>
             <p className="text-muted-foreground text-sm max-w-xs mx-auto font-medium">
-              Upload surveillance footage for threat analysis
+              Upload surveillance footage for AI threat analysis
             </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onUploadClick}
+              className="mt-5 px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg text-sm shadow-md hover:bg-primary/90 transition-all"
+            >
+              Choose Video File
+            </motion.button>
           </motion.div>
         </div>
       ) : (
-        <>
-          {/* Video Container */}
-          <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="max-w-full max-h-full object-contain"
-              controls
-              onTimeUpdate={handleTimeUpdate}
-              onLoadedMetadata={handleLoadedMetadata}
-              playsInline
-              crossOrigin="anonymous"
-              onEnded={handleVideoEnded}
-            >
-              {captionUrl && (
-                <track
-                  ref={trackRef}
-                  label="Threat Detection"
-                  kind="metadata"
-                  srcLang="en"
-                  src={captionUrl}
-                />
-              )}
-            </video>
-
-            {/* Analyze Overlay */}
-            {isAnalyzing && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-0 bg-foreground/90 backdrop-blur-sm flex flex-col items-center justify-center z-20"
-              >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                  className="w-12 h-12 border-4 border-muted border-t-primary rounded-full"
-                />
-                <p className="text-primary mt-3 text-sm font-bold">
-                  Scanning for threats...
-                </p>
-              </motion.div>
+        /* ─── Video + Overlays ─── */
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0">
+          {/* The actual video — fills entire container */}
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className="w-full h-full object-contain"
+            controls
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            playsInline
+            crossOrigin="anonymous"
+            onEnded={handleVideoEnded}
+          >
+            {captionUrl && (
+              <track
+                ref={trackRef}
+                label="Threat Detection"
+                kind="metadata"
+                srcLang="en"
+                src={captionUrl}
+              />
             )}
+          </video>
 
-            {/* Incident Summary End Card */}
-            {showEndCard && incidentSummary && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 z-20 text-center"
-              >
-                <h3 className="text-xl font-display font-bold text-white mb-4">
-                  Incident Summary
-                </h3>
-                <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-2xl italic mb-6">
-                  "{incidentSummary}"
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleReplay}
-                  className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-lg flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Replay Video
-                </motion.button>
-              </motion.div>
-            )}
-          </div>
-
-          {/* Caption Area Below Video */}
-          {!isAnalyzing && activeSegment && (
+          {/* ── Analyzing Overlay ── */}
+          {isAnalyzing && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="bg-card border-t border-border px-3 sm:px-4 lg:px-6 py-3 sm:py-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center z-20"
             >
-              <div className="max-w-4xl mx-auto">
-                <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
-                  <span className="text-xs font-bold text-primary">
-                    {sceneType || "Surveillance"}
-                  </span>
-                  <span className="w-1 h-1 rounded-full bg-secondary"></span>
-                  <span
-                    className="text-xs font-bold uppercase"
-                    style={{ color: getSeverityColor(activeSegment.severity) }}
-                  >
-                    {activeSegment.severity} SEVERITY
-                  </span>
-                </div>
-
-                <h3 className="text-sm sm:text-base font-display text-primary font-bold mb-1 text-center">
-                  ⚠ {activeSegment.threatType}
-                </h3>
-
-                <p className="text-xs font-bold text-center mb-2" style={{ color: getSeverityColor(activeSegment.severity) }}>
-                  Category: {activeSegment.alertCategory}
-                </p>
-
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed text-center font-medium">
-                  {activeSegment.description}
-                </p>
-              </div>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                className="w-14 h-14 border-4 border-muted border-t-primary rounded-full"
+              />
+              <p className="text-primary mt-4 text-base font-bold">Scanning for threats...</p>
+              <p className="text-muted-foreground text-xs mt-1">AI is analyzing your footage</p>
             </motion.div>
           )}
-        </>
+
+          {/* ── Active Threat Overlay Strip (bottom) ── */}
+          {!isAnalyzing && activeSegment && (
+            <motion.div
+              key={activeSegment.startTime}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.25 }}
+              className="absolute bottom-0 left-0 right-0 z-10 px-4 py-3 bg-gradient-to-t from-black/90 to-black/60"
+            >
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className="w-2 h-2 rounded-full animate-pulse shrink-0"
+                    style={{ backgroundColor: getSeverityColor(activeSegment.severity) }}
+                  />
+                  <span className="text-xs font-bold text-white">
+                    ⚠ {activeSegment.threatType}
+                  </span>
+                  <span
+                    className="text-xs font-bold uppercase px-1.5 py-0.5 rounded"
+                    style={{
+                      color: getSeverityColor(activeSegment.severity),
+                      backgroundColor: getSeverityColor(activeSegment.severity) + '22',
+                    }}
+                  >
+                    {activeSegment.severity}
+                  </span>
+                </div>
+                <span className="text-xs text-white/60 font-medium">
+                  {sceneType || "Surveillance"}
+                </span>
+              </div>
+              <p className="text-xs text-white/80 mt-1 leading-relaxed line-clamp-2 font-medium">
+                {activeSegment.description}
+              </p>
+            </motion.div>
+          )}
+
+          {/* ── Incident Summary End Card ── */}
+          {showEndCard && incidentSummary && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 bg-black/92 flex flex-col items-center justify-center p-6 z-20 text-center"
+            >
+              <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-display font-bold text-white mb-3">Incident Summary</h3>
+              <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-2xl italic mb-6">
+                &ldquo;{incidentSummary}&rdquo;
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleReplay}
+                className="px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-lg flex items-center gap-2 shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Replay Video
+              </motion.button>
+            </motion.div>
+          )}
+        </div>
       )}
     </div>
   );

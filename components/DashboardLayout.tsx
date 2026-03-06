@@ -296,7 +296,7 @@ export const DashboardLayout: React.FC = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-background flex flex-col">
+      <main className="flex-1 overflow-hidden bg-background flex flex-col">
         {missingPhone && currentPage !== "settings" && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -319,7 +319,7 @@ export const DashboardLayout: React.FC = () => {
             </button>
           </motion.div>
         )}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative overflow-hidden">
           <Outlet />
         </div>
       </main>

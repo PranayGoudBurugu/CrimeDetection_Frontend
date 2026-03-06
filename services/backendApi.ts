@@ -25,29 +25,17 @@ export const uploadVideoForAnalysis = async (
   userEmail?: string | null,
   location?: string,
   alertPhone?: string,
+  alertEmail?: string | null,
 ) => {
   const formData = new FormData();
   formData.append("video", videoFile);
 
-  if (modelType) {
-    formData.append("modelType", modelType);
-  }
-
-  if (customPrompt) {
-    formData.append("prompt", customPrompt);
-  }
-
-  if (userEmail) {
-    formData.append("userEmail", userEmail);
-  }
-
-  if (location) {
-    formData.append("location", location);
-  }
-
-  if (alertPhone) {
-    formData.append("alertPhone", alertPhone);
-  }
+  if (modelType) formData.append("modelType", modelType);
+  if (customPrompt) formData.append("prompt", customPrompt);
+  if (userEmail) formData.append("userEmail", userEmail);
+  if (location) formData.append("location", location);
+  if (alertPhone) formData.append("alertPhone", alertPhone);
+  if (alertEmail) formData.append("alertEmail", alertEmail);
 
   const response = await fetch(`${API_URL}/getanalysis`, {
     method: "POST",
@@ -61,6 +49,7 @@ export const uploadVideoForAnalysis = async (
 
   return await response.json();
 };
+
 
 // ============================================
 // ANALYSIS HISTORY
