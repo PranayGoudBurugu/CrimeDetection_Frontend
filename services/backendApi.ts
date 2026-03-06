@@ -26,6 +26,8 @@ export const uploadVideoForAnalysis = async (
   location?: string,
   alertPhone?: string,
   alertEmail?: string | null,
+  lat?: number,
+  lng?: number,
 ) => {
   const formData = new FormData();
   formData.append("video", videoFile);
@@ -36,6 +38,8 @@ export const uploadVideoForAnalysis = async (
   if (location) formData.append("location", location);
   if (alertPhone) formData.append("alertPhone", alertPhone);
   if (alertEmail) formData.append("alertEmail", alertEmail);
+  if (lat != null) formData.append("lat", String(lat));
+  if (lng != null) formData.append("lng", String(lng));
 
   const response = await fetch(`${API_URL}/getanalysis`, {
     method: "POST",

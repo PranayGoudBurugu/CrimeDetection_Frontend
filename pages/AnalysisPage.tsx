@@ -22,6 +22,7 @@ export const AnalysisPage: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [alertPhone, setAlertPhone] = useState<string | null>(null);
   const [cameraLocation, setCameraLocation] = useState<string>("");
+  const [cameraCoords, setCameraCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locationDetecting, setLocationDetecting] = useState(false);
   const [alertSent, setAlertSent] = useState<boolean>(false);
   const [showTimeline, setShowTimeline] = useState(true);
@@ -36,6 +37,7 @@ export const AnalysisPage: React.FC = () => {
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
+          setCameraCoords({ lat: latitude, lng: longitude });
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
             { headers: { "Accept-Language": "en" } }
@@ -167,7 +169,9 @@ export const AnalysisPage: React.FC = () => {
         userEmail,
         cameraLocation || undefined,
         alertPhone || undefined,
-        userEmail,   // alertEmail — send alert to the logged-in user's email
+        userEmail,         // alertEmail
+        cameraCoords?.lat, // lat
+        cameraCoords?.lng, // lng
       );
       if (result.success && result.data) {
         const mlResponse = result.data.mlResponse;
