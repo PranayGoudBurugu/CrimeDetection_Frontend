@@ -18,6 +18,64 @@ export const ProfilePage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
+  // Phone verification state
+  type VerifyState = "idle" | "calling" | "verified" | "error";
+  const [verifyState, setVerifyState] = useState<VerifyState>("idle");
+  const [validationCode, setValidationCode] = useState<string | null>(null);
+  const [verifyError, setVerifyError] = useState<string>("");
+  const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const handleVerifyPhone = async () => {
+    if (!profile.phone) return;
+    setVerifyState("calling");
+    setValidationCode(null);
+    setVerifyError("");
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5005";
+      const res = await fetch(`${apiUrl}/verify-phone/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: profile.phone }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        setVerifyState("error");
+        setVerifyError(data.error || "Verification failed. Check the phone number and try again.");
+        return;
+      }
+
+      setValidationCode(data.validationCode);
+
+      // Poll every 5 seconds to check if Twilio confirmed the number
+      if (pollRef.current) clearInterval(pollRef.current);
+      pollRef.current = setInterval(async () => {
+        try {
+          const encoded = encodeURIComponent(profile.phone);
+          const statusRes = await fetch(`${apiUrl}/verify-phone/status/${encoded}`);
+          const statusData = await statusRes.json();
+          if (statusData.verified) {
+            setVerifyState("verified");
+            if (pollRef.current) clearInterval(pollRef.current);
+            showToast("✅ Number verified! Click Save to apply.", "success");
+          }
+        } catch { /* keep polling */ }
+      }, 5000);
+
+      // Stop polling after 5 minutes regardless
+      setTimeout(() => {
+        if (pollRef.current) clearInterval(pollRef.current);
+        setVerifyState((s) => s === "calling" ? "error" : s);
+        setVerifyError("Verification timed out. Please try again.");
+      }, 5 * 60 * 1000);
+
+    } catch (err: any) {
+      setVerifyState("error");
+      setVerifyError(err.message || "Network error. Is the backend running?");
+    }
+  };
+
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
@@ -104,8 +162,8 @@ export const ProfilePage: React.FC = () => {
             exit={{ opacity: 0, y: -40 }}
             transition={{ duration: 0.3 }}
             className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-xl text-sm font-semibold ${toast.type === "success"
-                ? "bg-green-500 text-white"
-                : "bg-destructive text-destructive-foreground"
+              ? "bg-green-500 text-white"
+              : "bg-destructive text-destructive-foreground"
               }`}
           >
             {toast.message}
@@ -160,8 +218,8 @@ export const ProfilePage: React.FC = () => {
               <p className="text-sm text-muted-foreground mb-2">{profile.email}</p>
               <span
                 className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${isAdmin(profile.email)
-                    ? "bg-primary/20 text-primary border border-primary/40"
-                    : "bg-muted text-muted-foreground border border-border"
+                  ? "bg-primary/20 text-primary border border-primary/40"
+                  : "bg-muted text-muted-foreground border border-border"
                   }`}
               >
                 {isAdmin(profile.email) ? "Admin" : "User"}
@@ -210,24 +268,107 @@ export const ProfilePage: React.FC = () => {
               />
             </motion.div>
 
-            {/* Mobile Number */}
+            {/* Mobile Number + Twilio Verification */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.4 }}
             >
               <label htmlFor="profile-phone" className="block text-sm font-bold text-primary mb-2">
-                Mobile Number
+                Alert Phone Number
+                <span className="ml-2 text-xs font-normal text-muted-foreground">(must be Twilio-verified to receive SMS)</span>
               </label>
-              <input
-                id="profile-phone"
-                type="tel"
-                value={profile.phone}
-                onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
-                placeholder="Enter your mobile number"
-                className="w-full px-4 py-2.5 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium transition-all"
-              />
+
+              <div className="flex gap-2">
+                <input
+                  id="profile-phone"
+                  type="tel"
+                  value={profile.phone}
+                  onChange={(e) => {
+                    setProfile((p) => ({ ...p, phone: e.target.value }));
+                    setVerifyState("idle");
+                    setValidationCode(null);
+                  }}
+                  placeholder="+91XXXXXXXXXX"
+                  className="flex-1 px-4 py-2.5 bg-background border-2 border-input text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring font-medium transition-all"
+                />
+                <motion.button
+                  whileHover={verifyState !== "calling" ? { scale: 1.04 } : {}}
+                  whileTap={verifyState !== "calling" ? { scale: 0.96 } : {}}
+                  onClick={handleVerifyPhone}
+                  disabled={verifyState === "calling" || verifyState === "verified" || !profile.phone}
+                  className={`px-4 py-2.5 text-sm font-bold rounded-lg whitespace-nowrap transition-all border-2 ${verifyState === "verified"
+                    ? "border-green-500 bg-green-500/10 text-green-400 cursor-default"
+                    : verifyState === "calling"
+                      ? "border-amber-500 bg-amber-500/10 text-amber-400 cursor-wait"
+                      : "border-ring bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                >
+                  {verifyState === "verified" ? "✓ Verified" : verifyState === "calling" ? "Calling…" : "Verify via Call"}
+                </motion.button>
+              </div>
+
+              {/* Verification instructions + code */}
+              <AnimatePresence>
+                {verifyState === "calling" && validationCode && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -8, height: 0 }}
+                    className="mt-3 rounded-xl border-2 border-amber-500/40 bg-amber-500/5 px-5 py-4 overflow-hidden"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">📞</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-amber-400 mb-1">Twilio is calling your phone now!</p>
+                        <p className="text-xs text-muted-foreground mb-3">When you answer, enter this code on your keypad followed by <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs">#</kbd></p>
+                        <div className="flex items-center gap-3">
+                          <div className="text-4xl font-mono font-black tracking-widest text-foreground bg-muted px-5 py-3 rounded-xl border border-border select-all">
+                            {validationCode}
+                          </div>
+                          <div className="text-xs text-muted-foreground leading-relaxed">
+                            Polling for<br />confirmation…
+                            <motion.span
+                              animate={{ opacity: [1, 0, 1] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            > ●</motion.span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">After entering the code, this page updates automatically.</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {verifyState === "verified" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-3 rounded-xl border-2 border-green-500/40 bg-green-500/5 px-5 py-3 flex items-center gap-3"
+                  >
+                    <span className="text-xl">✅</span>
+                    <div>
+                      <p className="text-sm font-bold text-green-400">Number verified with Twilio!</p>
+                      <p className="text-xs text-muted-foreground">Click Save Changes to apply — SMS alerts will now be delivered.</p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {verifyState === "error" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-3 rounded-xl border-2 border-destructive/40 bg-destructive/5 px-5 py-3 flex items-center gap-3"
+                  >
+                    <span className="text-xl">❌</span>
+                    <p className="text-sm text-destructive">{verifyError}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
+
 
             {/* Save Button */}
             <motion.div
